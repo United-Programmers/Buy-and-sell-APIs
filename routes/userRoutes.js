@@ -7,19 +7,25 @@ const router = express.Router({ mergeParams: true });
 
 router.post('/user/signUp', userSignUp);
 
+
+//* EMMANUEL YOU CAN WORK ON THE COMMENTED ROUTES BELLOW
+// router.post('/admin/signUp', userSignUp);
+// router.post('/seller/signUp', userSignUp);
+// router.post('/driver/signUp', userSignUp);
+
 router.post('/login', login);
 router.post('/logout', protect, logout);
 router.post('/verify/:id/:token/', verify);
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
-router.get('/me', protect, getMe, getUser)
+router.get('/user/me', protect, getMe, getUser)
 router.patch('/updateMyPassword', protect, updatePassword);
-router.patch('/updateMe', protect, uploadUserPhoto, resizeUserPhoto, updateMe);
+router.patch('/user/updateMe', protect, uploadUserPhoto, resizeUserPhoto, updateMe);
 
 
-router.route('/').get(protect, restrictTo('super-admin'), getAllUsers)
+router.route('/').get(protect, getAllUsers)
 router
-    .route('/:id')
+    .route('/user/:id')
     .get(protect, getUser)
     .delete(protect, deleteUser)
 

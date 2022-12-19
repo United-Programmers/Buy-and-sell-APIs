@@ -6,7 +6,7 @@ const User = require('../models/userModel');
 const Token = require('../models/token');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
-const { EmailVerify, forgetEmail, ApproveLecturer } = require("../utils/verifyEmail");
+const { EmailVerify, forgetEmail } = require("../utils/verifyEmail");
 
 const signToken = id => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -62,6 +62,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.user = currentUser;
     next();
 });
+
 
 //* SIGN UP
 exports.userSignUp = catchAsync(async (req, res, next) => {
@@ -164,7 +165,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     }
     createSendToken(user, 200, res);
 });
-
 
 //* RESET PASSWORD
 exports.resetPassword = catchAsync(async (req, res, next) => {
