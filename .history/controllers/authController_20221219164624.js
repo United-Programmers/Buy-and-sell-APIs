@@ -2,11 +2,11 @@ require("dotenv").config();
 const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
+const UserModel = require('../models/userModel');
 const Token = require('../models/token');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
-const { EmailVerify, forgetEmail, ApproveLecturer } = require("../utils/verifyEmail");
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const { EmailVerify, forgetEmail } = require("../utils/verifyEmail");
 
 const signToken = id => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -14,7 +14,7 @@ const signToken = id => {
     });
 };
 
-const createSendToken = (data, statusCode, res) => {
+const createSendToken = (data, statusCode, res, passKey) => {
     const token = signToken(data._id);
     const cookieOptions = {
         expires: new Date(
@@ -50,7 +50,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     }
 
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    const currentUser = await User.findById(decoded.id);
+    const currentUser = await UserModel.findById(decoded.id);
     if (!currentUser) {
         return next(new AppError('The user belonging to this token does no longer exist.', 401));
     }
@@ -65,10 +65,13 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 //* SIGN UP
 exports.userSignUp = catchAsync(async (req, res, next) => {
-    let user = await User.findOne({ email: req.body.email });
+
+    console.log(" Sign up : ", req.body)
+
+    let user = await UserModel.findOne({ email: req.body.email });
     if (user) return next(new AppError('User with given email already exist!', 400));
 
-    const newUser = await User.create({
+    const newUser = await UserModel.create({
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         phoneNumber: req.body.phoneNumber,
@@ -95,7 +98,7 @@ exports.userSignUp = catchAsync(async (req, res, next) => {
 //* VERIFY TOKEN 
 exports.verify = catchAsync(async (req, res, next) => {
 
-    const user = await User.findOne({ _id: req.params.id });
+    const user = await UserModel.findOne({ _id: req.params.id });
     if (!user) return next(new AppError("Invalid link or the link has expired", 400));
 
     const token = await Token.findOne({ userId: user._id, myToken: req.params.token });
@@ -105,9 +108,9 @@ exports.verify = catchAsync(async (req, res, next) => {
     const filter = { _id: user._id }
     const updateDocument = { $set: { verified: true } }
 
-    await User.updateOne(filter, updateDocument);
+    await UserModel.updateOne(filter, updateDocument);
     await Token.findByIdAndRemove(token._id);
-    const newUser = await User.findOne({ _id: req.params.id });
+    const newUser = await UserModel.findOne({ _id: req.params.id });
 
     if (!newUser.verified) return next(new AppError("You did not verify your email", 400));
 
@@ -120,7 +123,7 @@ exports.login = catchAsync(async (req, res, next) => {
     if (!email || !password) {
         return next(new AppError('Please provide email and password!', 400));
     }
-    const user = await User.findOne({ email }).select('+password');
+    const user = await UserModel.findOne({ email }).select('+password');
     if (!user || !(await user.correctPassword(password, user.password))) {
         return next(new AppError('Incorrect email or password', 401));
     }
@@ -143,7 +146,7 @@ exports.logout = (req, res) => {
 };
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await UserModel.findOne({ email: req.body.email });
     if (!user) {
         return next(new AppError('There is no user with this email address.', 404));
     }
@@ -169,7 +172,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 //* RESET PASSWORD
 exports.resetPassword = catchAsync(async (req, res, next) => {
     const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
-    const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } });
+    const user = await UserModel.findOne({ passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } });
 
     if (!user) {
         return next(new AppError('Token is invalid or has expired', 400));
@@ -185,7 +188,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 })
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
-    const user = await User.findById(req.user.id).select('+password');
+    const user = await UserModel.findById(req.user.id).select('+password');
 
     if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
         return next(new AppError('Your current password is wrong.', 401));

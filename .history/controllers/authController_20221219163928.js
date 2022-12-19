@@ -4,9 +4,9 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const Token = require('../models/token');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appError');
-const { EmailVerify, forgetEmail, ApproveLecturer } = require("../utils/verifyEmail");
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const { EmailVerify, forgetEmail } = require("../utils/verifyEmail");
 
 const signToken = id => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -14,7 +14,7 @@ const signToken = id => {
     });
 };
 
-const createSendToken = (data, statusCode, res) => {
+const createSendToken = (data, statusCode, res, passKey) => {
     const token = signToken(data._id);
     const cookieOptions = {
         expires: new Date(
@@ -65,6 +65,9 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 //* SIGN UP
 exports.userSignUp = catchAsync(async (req, res, next) => {
+
+    console.log(" Sign up : ", req)
+
     let user = await User.findOne({ email: req.body.email });
     if (user) return next(new AppError('User with given email already exist!', 400));
 

@@ -14,7 +14,7 @@ const signToken = id => {
     });
 };
 
-const createSendToken = (data, statusCode, res) => {
+const createSendToken = (data, statusCode, res, passKey) => {
     const token = signToken(data._id);
     const cookieOptions = {
         expires: new Date(
