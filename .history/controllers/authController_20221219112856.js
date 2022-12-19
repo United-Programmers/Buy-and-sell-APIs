@@ -64,7 +64,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 });
 
 //* SIGN UP
-exports.userSignUp = catchAsync(async (req, res, next) => {
+exports.signUp = catchAsync(async (req, res, next) => {
     let user = await User.findOne({ email: req.body.email });
     if (user) return next(new AppError('User with given email already exist!', 400));
 
