@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { geTutorsRouteFunc } = require('../controllers/userController');
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -35,7 +34,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["user", "driver", "super-admin", "seller", "admin"],
+        enum: ["admin", "driver", "super-admin", "seller", "user"],
         default: "user",
         trim: true,
     },
@@ -62,7 +61,7 @@ const userSchema = new mongoose.Schema({
     },
     verified: {
         type: Boolean,
-        default: geTutorsRouteFunc,
+        default: false,
     },
     status: {
         type: Boolean,
