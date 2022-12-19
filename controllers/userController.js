@@ -62,14 +62,15 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-// update address details
-exports.updateAddressDetails = async (req, res) => {
+/**
+ * update address details
+ */
+exports.updateAddressDetails = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { province, city, postalCode, surBurb, street, complex } = req.body;
 
   try {
-    const user = await User.findById(id).populate("addressDetails");
-    console.log(user);
+    const user = await User.findById(id).populate('addressDetails');
+
     if (!user) {
       res.status(404).json("No user found with id");
     }
@@ -77,27 +78,27 @@ exports.updateAddressDetails = async (req, res) => {
     const addressExist = await AddressDetailsModel.findOne({
       userId: user._id,
     });
-    console.log(addressExist);
 
     if (!addressExist) {
       const newAddressDetails = await new AddressDetailsModel({
         ...req.body,
         userId: user._id,
       }).save();
+
       user.addressDetails = newAddressDetails;
       await user.save();
-      console.log("not exist so save");
 
-      res.status(201).json({ message: "Address updated successfully" , user});
+      res.status(200).json({ message: "Address updated successfully", user });
     } else {
-      console.log("exists ");
+      user.addressDetails =  await AddressDetailsModel.findOneAndUpdate(user.addressDetails?._id, req.body, {new: true});
+      user.save({new: true});
 
-      res.status(201).json({ message: "Address updated successfully" });
+      res.status(200).json({ message: "Address updated successfully", user });
     }
   } catch (error) {
     res.status(500).json(error.message);
   }
-};
+});
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });

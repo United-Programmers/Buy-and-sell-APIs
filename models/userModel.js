@@ -74,7 +74,7 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
   addressDetails: {
-    type: mongoose.Types.ObjectId,
+    type: mongoose.SchemaTypes.ObjectId,
     ref: "AddressDetails",
   },
   passwordChangedAt: Date,
