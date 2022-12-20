@@ -34,12 +34,7 @@ exports.getMe = (req, res, next) => {
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm) {
-    return next(
-      new AppError(
-        "This route is not for password updates. Please use /updateMyPassword.",
-        400
-      )
-    );
+    return next(new AppError("This route is not for password updates. Please use /updateMyPassword.", 400));
   }
   const filteredBody = filterObj(
     req.body,
@@ -62,52 +57,6 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-/**
- * update address details
- */
-exports.updateAddressDetails = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
-
-  /**
-   * verify that it's user trying to update details
-   */
-  // not able to implement this because i get error of jwt malfunctioned
-
-  try {
-    const user = await User.findById(id).populate("addressDetails");
-
-    if (!user) {
-      res.status(404).json("No user found with id");
-    }
-
-    const addressExist = await AddressDetailsModel.findOne({
-      userId: user._id,
-    });
-
-    if (!addressExist) {
-      const newAddressDetails = await new AddressDetailsModel({
-        ...req.body,
-        userId: user._id,
-      }).save();
-
-      user.addressDetails = newAddressDetails;
-      await user.save();
-
-      res.status(200).json({ message: "Address updated successfully", user });
-    } else {
-      user.addressDetails = await AddressDetailsModel.findOneAndUpdate(
-        user.addressDetails?._id,
-        req.body,
-        { new: true }
-      );
-      user.save({ new: true });
-
-      res.status(200).json({ message: "Address updated successfully", user });
-    }
-  } catch (error) {
-    res.status(500).json(error.message);
-  }
-});
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
