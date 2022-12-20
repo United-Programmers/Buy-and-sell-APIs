@@ -65,11 +65,16 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 /**
  * update address details
  */
-exports.updateAddressDetails = catchAsync(async (req, res) => {
+exports.updateAddressDetails = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
+  /**
+   * verify that it's user trying to update details
+   */
+  // not able to implement this because i get error of jwt malfunctioned
+
   try {
-    const user = await User.findById(id).populate('addressDetails');
+    const user = await User.findById(id).populate("addressDetails");
 
     if (!user) {
       res.status(404).json("No user found with id");
@@ -90,8 +95,12 @@ exports.updateAddressDetails = catchAsync(async (req, res) => {
 
       res.status(200).json({ message: "Address updated successfully", user });
     } else {
-      user.addressDetails =  await AddressDetailsModel.findOneAndUpdate(user.addressDetails?._id, req.body, {new: true});
-      user.save({new: true});
+      user.addressDetails = await AddressDetailsModel.findOneAndUpdate(
+        user.addressDetails?._id,
+        req.body,
+        { new: true }
+      );
+      user.save({ new: true });
 
       res.status(200).json({ message: "Address updated successfully", user });
     }
