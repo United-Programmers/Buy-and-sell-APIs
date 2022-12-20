@@ -35,6 +35,20 @@ const productSchema = new mongoose.Schema(
                 message: 'Discount price ({VALUE}) should be below regular price'
             }
         },
+        category: {
+            type: String,
+        },
+        type: {
+            type: String,
+        },
+        ageRange: {
+            // Baby, Adult, Teenager, Granny
+            type: [String],
+        },
+        genderType: {
+            // Man, Women, Otters
+            type: [String],
+        },
         summary: {
             type: String,
             trim: true,
@@ -53,6 +67,16 @@ const productSchema = new mongoose.Schema(
         createdAt: {
             type: Date,
             default: Date.now(),
+            select: false
+        },
+        bestSeller: {
+            type: Boolean,
+            default: false,
+        },
+        //* when the seller delete an item 
+        deactivate: {
+            type: Boolean,
+            default: true,
             select: false
         },
         Users: [
