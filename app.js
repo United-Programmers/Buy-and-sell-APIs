@@ -10,6 +10,7 @@ const cors = require('cors');
 const compression = require('compression');
 
 const userRouter = require('./routes/userRoutes');
+const productRouter = require('./routes/productRoutes');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -44,6 +45,7 @@ app.use((req, res, next) => {
 
 app.use(cors())
 app.use('/api/v1/users', userRouter)
+app.use('/api/v1/products', productRouter)
 
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

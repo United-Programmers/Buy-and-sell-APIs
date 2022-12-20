@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema(
     {
         productName: {
             type: String,
-            required: [true, 'please product name is required'],
+            // required: [true, 'please product name is required'],
             unique: true,
             trim: true,
         },
@@ -52,16 +52,16 @@ const productSchema = new mongoose.Schema(
         summary: {
             type: String,
             trim: true,
-            required: [true, 'Please summery is required']
+            // required: [true, 'Please summery is required']
         },
         description: {
             type: String,
             trim: true,
-            required: [true, 'Please description is required']
+            // required: [true, 'Please description is required']
         },
         productsImageCover: {
             type: String,
-            required: [true, 'Please image cover is required']
+            // required: [true, 'Please image cover is required']
         },
         productsImages: [String],
         createdAt: {
