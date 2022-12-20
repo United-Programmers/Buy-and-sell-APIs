@@ -75,6 +75,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 
+
 //* SIGN UP
 exports.userSignUp = catchAsync(async (req, res, next) => {
   let user = await User.findOne({ email: req.body.email });

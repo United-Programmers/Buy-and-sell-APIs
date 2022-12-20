@@ -1,5 +1,3 @@
-//* UPLOADING MULTIPLE IMAGES
-
 const multer = require('multer');
 const sharp = require('sharp');
 const catchAsync = require('./../utils/catchAsync');
@@ -17,36 +15,58 @@ const multerFilter = (req, file, cb) => {
 
 const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 
-//* ---UPLOAD PROFILE IMAGE---
-exports.uploadUserPhoto = upload.single('photo');
-exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
-    if (!req.file) return next();
+exports.uploadImage = upload.fields([
+    { name: 'productsImageCover', maxCount: 1 },
+    { name: 'productsImages', maxCount: 6 }
+]);
 
-    if (!req?.user?.id) {
-        req.file.filename = `user-${Date.now()}.jpeg`;
-    } else {
-        req.file.filename = `user-${req?.user?.id}-${Date.now()}.jpeg`;
-    }
+exports.resizeImage = catchAsync(async (req, res, next) => {
+    if (!req.files.productsImageCover || !req.files.productsImages) return next()
 
-    await sharp(req.file.buffer)
-        .resize(500, 500)
+    req.body.productsImageCover = `productsImageCover-${req.params.id}-${Date.now()}-cover.jpeg`;
+    await sharp(req.files.productsImageCover[0].buffer)
+        .resize(2000, 1333)
         .toFormat('jpeg')
         .jpeg({ quality: 100 })
-        .toFile(`public/img/users/${req.file.filename}`);
+        .toFile(`public/img/products/${req.body.productsImageCover}`);
+
+    req.body.productsImages = [];
+    await Promise.all(
+        req.files.productsImages.map(async (file, i) => {
+            const productsImages = `productsImages-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+
+            await sharp(file.buffer)
+                .resize(1000, 900)
+                .toFormat('jpeg')
+                .jpeg({ quality: 100 })
+                .toFile(`public/img/products/${productsImages}`);
+            req.body.productsImages.push(productsImages);
+        })
+    );
     next();
 });
 
 
-//* ---UPLOAD COURSE COVER IMAGE---
-exports.uploadCourseImage = upload.single('imageCover');
-exports.resizeCourseImage = catchAsync(async (req, res, next) => {
-    if (!req.file) return next();
-    req.file.filename = `course-${Date.now()}.jpeg`;
 
+
+
+
+
+
+
+//* ---UPLOAD PROFILE PICTURE ---
+exports.uploadUserPhoto = upload.single('photo');
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+    if (!req?.file) return next();
+    if (!req?.user?.id) {
+        req.file.photo = `user-${Date.now()}.jpeg`;
+    } else {
+        req.file.photo = `user-${req?.user?.id}-${Date.now()}.jpeg`;
+    }
     await sharp(req.file.buffer)
-        .resize(2000, 1333)
+        .resize(500, 500)
         .toFormat('jpeg')
         .jpeg({ quality: 100 })
-        .toFile(`public/img/courses/${req.file.filename}`);
+        .toFile(`public/img/users/${req.file.photo}`);
     next();
 });
