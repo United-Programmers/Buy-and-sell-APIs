@@ -18,18 +18,18 @@ router.param('id', checkID);
 // router.route('/tour-stats').get(controllers.getTourStats);
 // router.route('/monthly-plan/:year').get(protect, restrictTo('admin', 'lead-guide', 'guide'), controllers.getMonthlyPlan);
 
-//* get product by ID
+//* get tour by Id
 router.route('/:id/:x?/:y?').get(getProductById);
-router.patch('/:id').get(protect, updateProduct); //update product
+router.patch('/:id').get(protect, updateProduct);
 
 router
     .route('/')
-    .get(getAllProducts) // Get all products
-    .post(protect, uploadImage, resizeImage, createProduct); // create new product
+    .get(getAllProducts)
+    .post(protect, uploadImage, resizeImage, createProduct);
 
 router
     .route('/:id')
-    .patch(protect, uploadImage, resizeImage, updateProduct) // update product
-    .delete(protect, deleteProduct); // delete products
+    .patch(protect, uploadImage, resizeImage, updateProduct)
+    .delete(protect, deleteProduct);
 
 module.exports = router;
