@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 const express = require('express');
-const { getProductById, checkID, updateProduct, getAllProducts, createProduct } = require('../controllers/productController');
-const { uploadImage, resizeImage } = require('../controllers/imageController');
+const { getProductById, checkID, updateProduct, getAllProducts, createProduct, deleteProduct } = require('../controllers/productController');
+const { uploadProductImages, resizeProductImages } = require('../controllers/imageController');
 // const reviewRouter = require('../routes/reviewRoutes');
 // const bookingRouter = require('../routes/bookingRoutes');
 const { protect, restrictTo } = require('../controllers/authController');
@@ -25,11 +25,11 @@ router.patch('/:id').get(protect, updateProduct);
 router
     .route('/')
     .get(getAllProducts)
-    .post(protect, uploadImage, resizeImage, createProduct);
 
 router
     .route('/:id')
-    .patch(protect, uploadImage, resizeImage, updateProduct)
+    .patch(protect, updateProduct)
+    .post(protect, uploadProductImages, resizeProductImages, createProduct)
     .delete(protect, deleteProduct);
 
 module.exports = router;
