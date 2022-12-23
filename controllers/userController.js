@@ -73,39 +73,35 @@ exports.updateAddressDetails = catchAsync(async (req, res, next) => {
    */
   // not able to implement this because i get error of jwt malfunctioned
 
-  try {
-    const user = await User.findById(id).populate("addressDetails");
+  const user = await User.findById(id).populate("addressDetails");
 
-    if (!user) {
-      res.status(404).json("No user found with id");
-    }
+  if (!user) {
+    return next(new AppError("No user found with this id", 404));
+  }
 
-    const addressExist = await AddressDetailsModel.findOne({
+  const addressExist = await AddressDetailsModel.findOne({
+    userId: user._id,
+  });
+
+  if (!addressExist) {
+    const newAddressDetails = await new AddressDetailsModel({
+      ...req.body,
       userId: user._id,
-    });
+    }).save();
 
-    if (!addressExist) {
-      const newAddressDetails = await new AddressDetailsModel({
-        ...req.body,
-        userId: user._id,
-      }).save();
+    user.addressDetails = newAddressDetails;
+    await user.save();
 
-      user.addressDetails = newAddressDetails;
-      await user.save();
+    res.status(200).json({ message: "Address updated successfully", user });
+  } else {
+    user.addressDetails = await AddressDetailsModel.findOneAndUpdate(
+      user.addressDetails?._id,
+      req.body,
+      { new: true }
+    );
+    user.save({ new: true });
 
-      res.status(200).json({ message: "Address updated successfully", user });
-    } else {
-      user.addressDetails = await AddressDetailsModel.findOneAndUpdate(
-        user.addressDetails?._id,
-        req.body,
-        { new: true }
-      );
-      user.save({ new: true });
-
-      res.status(200).json({ message: "Address updated successfully", user });
-    }
-  } catch (error) {
-    res.status(500).json(error.message);
+    res.status(200).json({ status: "success", data: user });
   }
 });
 
