@@ -26,8 +26,8 @@ const AddressDetailSchema = new mongoose.Schema({
   },
   userId: {
     type: mongoose.Types.ObjectId,
-    ref: 'User'
-  }
+    ref: "User",
+  },
 });
 
 const AddressDetailsModel = mongoose.model(
