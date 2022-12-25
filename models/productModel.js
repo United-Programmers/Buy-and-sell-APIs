@@ -6,9 +6,8 @@ const productSchema = new mongoose.Schema(
     {
         productName: {
             type: String,
-            // required: [true, 'please product name is required'],
-            unique: true,
-            trim: true,
+            // unique: true,
+            // trim: true,
         },
         slug: String,
         ratingsAverage: {
@@ -28,12 +27,12 @@ const productSchema = new mongoose.Schema(
         },
         priceDiscount: {
             type: Number,
-            validate: {
-                validator: function (val) {
-                    return val < this.price;
-                },
-                message: 'Discount price ({VALUE}) should be below regular price'
-            }
+            // validate: {
+            //     validator: function (val) {
+            //         return val < this.price;
+            //     },
+            //     message: 'Discount price ({VALUE}) should be below regular price'
+            // }
         },
         category: {
             type: String,
@@ -42,26 +41,52 @@ const productSchema = new mongoose.Schema(
             type: String,
         },
         ageRange: {
-            // Baby, Adult, Teenager, Granny
-            type: [String],
+            type: [String], //* kids, young adult,  adult,  
         },
         genderType: {
-            // Man, Women, Otters
-            type: [String],
+            type: [String], //* Male, Female, Others
         },
         summary: {
             type: String,
             trim: true,
-            // required: [true, 'Please summery is required']
         },
         description: {
             type: String,
             trim: true,
-            // required: [true, 'Please description is required']
+        },
+        stock: {
+            type: Number,
+        },
+        stockCity: {
+            type: [String], //* Johannesburg, Captown, Durban
+        },
+        productWarranty: {
+            type: Number, //* 0 to 6 months
+        },
+        size: {
+            type: [String], //* xs, sm, md, lg, xl           
+        },
+        availability: {
+            type: Boolean, //* available or not available
+            default: true
+        },
+        colors: {
+            type: [String], //* red, blue, green, yellow, white, black
+        },
+        barCode: {
+            type: String,
+        },
+        itemWeight: {
+            type: String, //* 0.634 ounces
+        },
+        ProductDimensions: {
+            type: [String], //* 5.55 x 1.85 x 0.39 inches
+        },
+        manufacturer: {
+            type: String, //* WISTON
         },
         productsImageCover: {
             type: String,
-            // required: [true, 'Please image cover is required']
         },
         productsImages: [String],
         createdAt: {
@@ -77,14 +102,12 @@ const productSchema = new mongoose.Schema(
         deactivate: {
             type: Boolean,
             default: true,
-            select: false
+            // select: false
         },
-        Users: [
-            {
-                type: mongoose.Schema.ObjectId,
-                ref: "User"
-            }
-        ]
+        Users: {
+            type: mongoose.Schema.ObjectId,
+            ref: "User"
+        }
     },
     {
         toJSON: { virtuals: true },
@@ -100,6 +123,7 @@ productSchema.virtual('reviews', {
     foreignField: 'tour',
     localField: '_id'
 })
+
 
 productSchema.pre('save', function (next) {
     this.slug = slugify(this.productName, { lower: true });
@@ -119,6 +143,7 @@ productSchema.pre(/^find/, function (next) {
     });
     next();
 });
+
 
 const Products = mongoose.model('Products', productSchema);
 module.exports = Products;

@@ -2,8 +2,7 @@
 const Products = require('../models/productModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-
-const { deleteOne, updateOne, createOne, getOne, getAll } = require('../controllers/handleFactory');
+const { deleteOne, updateOne, createOne, getOne, getAll, productsAction } = require('../controllers/handleFactory');
 
 exports.aliasTopTours = (req, res, next) => {
     req.query.limit = '5';
@@ -23,7 +22,6 @@ exports.checkID = (req, res, next, val) => {
     next();
 };
 
-
 const filterObj = (obj, ...allowedFields) => {
     const newObj = {};
     Object.keys(obj).forEach(el => {
@@ -32,12 +30,23 @@ const filterObj = (obj, ...allowedFields) => {
     return newObj;
 };
 
-
 exports.getAllProducts = getAll(Products)
-exports.getProductById = getOne(Products, { path: 'reviews' })
+// exports.getProductById = getOne(Products, { path: 'reviews' })
+exports.getProductById = getOne(Products)
 exports.updateProduct = updateOne(Products)
 exports.createProduct = createOne(Products)
 exports.deleteProduct = deleteOne(Products)
+
+
+//* GET PRODUCTS BY SELLER I
+exports.getProductBySellerID = productsAction(Products)
+
+
+//* PRODUCTS ACTION 
+exports.disableProduct = productsAction(Products, { availability: false })
+exports.enableProduct = productsAction(Products, { availability: true })
+exports.deactivateProduct = productsAction(Products, { deactivate: false })
+
 
 
 

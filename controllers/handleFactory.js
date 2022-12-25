@@ -59,7 +59,8 @@ exports.getOne = (Model, popOptions) => catchAsync(async (req, res, next) => {
 exports.updateOne = Model => catchAsync(async (req, res, next) => {
     const getReqBody = req.body;
     if (req.file) getReqBody.photo = req.file.filename;
-    if (req.file) getReqBody.imageCover = req.file.filename;
+    if (req.file) getReqBody.productsImageCover = req.file.filename;
+    if (req.file) getReqBody.productsImages = req.file.filename;
 
     const doc = await Model.findByIdAndUpdate(req.params.id, getReqBody, {
         new: true,
@@ -190,3 +191,52 @@ exports.getCourseByTutorId = (Model) => catchAsync(async (req, res, next) => {
         },
     });
 });
+
+
+// ======================
+//! * UPDATE PRODUCTS STATUS
+// ======================
+
+const responseData = (result, statusCode, res) => {
+    res.status(statusCode).json({
+        status: 'success',
+        data: {
+            data: result,
+        },
+    });
+}
+
+//* DISABLE, ENABLE, DEACTIVATE ==> PRODUCTS
+exports.productsAction = (Model, ActionObject) => catchAsync(async (req, res, next) => {
+    const products = await Model.findByIdAndUpdate(req.params.id, ActionObject);
+    if (!products) return next(new AppError('No document found with that ID', 404));
+    responseData(products, 200, res)
+});
+
+// ======================
+//! * END
+// ======================
+
+
+
+
+
+// ===================================
+//! * GET PRODUCTS BY USER(SELLER) ID
+// ===================================
+exports.getBySellerID = (Model) => catchAsync(async (req, res, next) => {
+    const products = await Model.find({ Users: req.params.id });
+    if (!products) return next(new AppError('No products found with that ID', 404));
+
+    res.status(200).json({
+        status: 'success',
+        results: products.length,
+        data: {
+            data: products,
+        },
+    });
+});
+
+// ======================
+//! * END
+// ======================
