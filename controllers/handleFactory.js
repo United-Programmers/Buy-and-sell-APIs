@@ -2,58 +2,47 @@ const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const APIFeatures = require('./../utils/apiFeatures');
 
+//! * UPDATE PRODUCTS STATUS
+const responseData = (result, statusCode, res, length) => {
+    res.status(statusCode).json({
+        status: 'success',
+        result: length ? length : 0,
+        data: {
+            data: result,
+        },
+    });
+}
+
 exports.getAll = Model => catchAsync(async (req, res, next) => {
     let filter = {};
-    if (req.params.tourId) filter = { tour: req.params.tourId };
+    if (req.params.prodId) filter = { tour: req.params.prodId };
 
     const features = new APIFeatures(Model.find(filter), req.query)
         .filter()
         .sort()
         .limitFields()
         .paginate();
-    // const doc = await features.query.explain();
-    const doc = await features.query;
-
-    res.status(200).json({
-        status: 'success',
-        results: doc.length,
-        data: {
-            data: doc
-        }
-    });
+    const products = await features.query;
+    responseData(products, 200, res, products.length)
 });
 
 exports.getMine = Model => catchAsync(async (req, res, next) => {
-    const findByUser = { user: req.user.id } //u can specify as many obj u can
+    const findByUser = { user: req.user.id }
     const features = new APIFeatures(Model.find(findByUser), req.query)
         .filter()
         .sort()
         .limitFields()
         .paginate();
-    const leaves = await features.query;
-
-    res.status(200).json({
-        status: 'success',
-        results: leaves.length,
-        data: {
-            data: leaves,
-        },
-    });
+    const products = await features.query;
+    responseData(products, 200, res, products.length)
 });
 
 exports.getOne = (Model, popOptions) => catchAsync(async (req, res, next) => {
     let query = Model.findById(req.params.id);
     if (popOptions) query = query.populate(popOptions);
-    const doc = await query;
-    if (!doc) {
-        return next(new AppError('No document found with that ID', 404));
-    }
-    res.status(200).json({
-        status: 'success',
-        data: {
-            data: doc
-        }
-    });
+    const product = await query;
+    if (!product) return next(new AppError('No document found with that ID', 404));
+    responseData(product, 200, res)
 });
 
 exports.updateOne = Model => catchAsync(async (req, res, next) => {
@@ -62,47 +51,72 @@ exports.updateOne = Model => catchAsync(async (req, res, next) => {
     if (req.file) getReqBody.productsImageCover = req.file.filename;
     if (req.file) getReqBody.productsImages = req.file.filename;
 
-    const doc = await Model.findByIdAndUpdate(req.params.id, getReqBody, {
+    const product = await Model.findByIdAndUpdate(req.params.id, getReqBody, {
         new: true,
         runValidators: true
     });
 
-    if (!doc) {
+    if (!product) {
         return next(new AppError('No document found with that ID', 404));
     }
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            data: doc
-        }
-    });
+    responseData(product, 200, res)
 });
 
 exports.deleteOne = Model => catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndDelete(req.params.id);
-
-    if (!doc) {
-        return next(new AppError('No details found with this ID', 404));
-    }
-
-    res.status(201).json({
-        status: 'success',
-        data: null
-    });
+    const product = await Model.findByIdAndDelete(req.params.id);
+    if (!product) return next(new AppError('No document found with this ID', 404));
+    responseData(null, 200, res)
 });
 
 exports.createOne = Model => catchAsync(async (req, res, next) => {
     const getReqBody = req.body;
-    if (req.file) getReqBody.imageCover = req.file.filename;
-    const doc = await Model.create(getReqBody);
-    res.status(201).json({
-        status: 'success',
-        data: {
-            data: doc
-        }
-    });
+    if (req.file) {
+        getReqBody.imageCover = req.file.filename;
+        getReqBody.reviewImages = req.file.filename;
+    }
+    const product = await Model.create(getReqBody);
+    responseData(product, 200, res)
 });
+
+
+// DISABLE, ENABLE, DEACTIVATE ==> PRODUCTS
+exports.productsAction = (Model, ActionObject) => catchAsync(async (req, res, next) => {
+    const products = await Model.findByIdAndUpdate(req.params.id, ActionObject);
+    if (!products) return next(new AppError('No document found with that ID', 404));
+    responseData(products, 200, res)
+});
+//END
+
+
+// GET PRODUCTS BY USER(SELLER) ID
+exports.getBySellerID = (Model) => catchAsync(async (req, res, next) => {
+    const products = await Model.find({ Users: req.params.id });
+    if (!products) return next(new AppError('No products found with that ID', 404));
+    responseData(products, 200, res, products.length)
+});
+//END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 exports.geSuspended = (Model, Status) => catchAsync(async (req, res, next) => {
     const users = await Model.find({ status: Status });
@@ -193,50 +207,5 @@ exports.getCourseByTutorId = (Model) => catchAsync(async (req, res, next) => {
 });
 
 
-// ======================
-//! * UPDATE PRODUCTS STATUS
-// ======================
-
-const responseData = (result, statusCode, res) => {
-    res.status(statusCode).json({
-        status: 'success',
-        data: {
-            data: result,
-        },
-    });
-}
-
-//* DISABLE, ENABLE, DEACTIVATE ==> PRODUCTS
-exports.productsAction = (Model, ActionObject) => catchAsync(async (req, res, next) => {
-    const products = await Model.findByIdAndUpdate(req.params.id, ActionObject);
-    if (!products) return next(new AppError('No document found with that ID', 404));
-    responseData(products, 200, res)
-});
-
-// ======================
-//! * END
-// ======================
 
 
-
-
-
-// ===================================
-//! * GET PRODUCTS BY USER(SELLER) ID
-// ===================================
-exports.getBySellerID = (Model) => catchAsync(async (req, res, next) => {
-    const products = await Model.find({ Users: req.params.id });
-    if (!products) return next(new AppError('No products found with that ID', 404));
-
-    res.status(200).json({
-        status: 'success',
-        results: products.length,
-        data: {
-            data: products,
-        },
-    });
-});
-
-// ======================
-//! * END
-// ======================

@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
 const Products = require('../models/productModel');
+const Users = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { deleteOne, updateOne, createOne, getOne, getAll, productsAction } = require('../controllers/handleFactory');
+const { deleteOne, updateOne, createOne, getOne, getAll, productsAction, getBySellerID } = require('../controllers/handleFactory');
 
 exports.aliasTopTours = (req, res, next) => {
     req.query.limit = '5';
@@ -31,15 +32,14 @@ const filterObj = (obj, ...allowedFields) => {
 };
 
 exports.getAllProducts = getAll(Products)
-// exports.getProductById = getOne(Products, { path: 'reviews' })
-exports.getProductById = getOne(Products)
+exports.getProductById = getOne(Products, { path: 'reviews' }) //Get the product with the review
 exports.updateProduct = updateOne(Products)
 exports.createProduct = createOne(Products)
 exports.deleteProduct = deleteOne(Products)
 
 
 //* GET PRODUCTS BY SELLER I
-exports.getProductBySellerID = productsAction(Products)
+exports.getProductBySellerID = getBySellerID(Products)
 
 
 //* PRODUCTS ACTION 
