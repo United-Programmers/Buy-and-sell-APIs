@@ -55,6 +55,31 @@ exports.resizeProductImages = catchAsync(async (req, res, next) => {
 
 
 
+//* UPLOAD REVIEW IMAGES 
+exports.uploadReviewImages = upload.fields([{ name: 'reviewImages', maxCount: 3 }]);
+
+exports.resizeReviewImages = catchAsync(async (req, res, next) => {
+
+    if (!req.files.reviewImages) return next();
+
+    req.body.reviewImages = [];
+    await Promise.all(
+        req.files.reviewImages.map(async (file, i) => {
+            const filename = `review-${req.params.prodId}-${Date.now()}-${i + 1}.jpeg`;
+            await sharp(file.buffer)
+                .resize(500, 500)
+                .toFormat('jpeg')
+                .jpeg({ quality: 100 })
+                .toFile(`public/img/reviews/${filename}`);
+            req.body.reviewImages.push(filename);
+        })
+    );
+
+    next();
+});
+//* ---THE END---
+
+
 
 
 //* ---UPLOAD PROFILE PICTURE ---
