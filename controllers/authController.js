@@ -17,7 +17,7 @@ const signToken = id => {
 const createSendToken = (data, statusCode, res) => {
     const token = signToken(data._id);
     const cookieOptions = {
-        expires: new Date(
+        expiresIn: new Date(
             Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
         ),
         httpOnly: true
@@ -206,3 +206,107 @@ exports.restrictTo = (...roles) => {
         next();
     };
 };
+
+//drivers function
+exports.driverSignup = catchAsync(async(req, res, next)=>{
+    let driverEmail = await User.findOne({ email: req.body.email });
+    if(driverEmail){
+        return next(new AppError('Driver with given email already exist!', 400));
+    }
+
+    const driver = await User.create({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phoneNumber: req.body.phoneNumber,
+        agreed: req.body.agreed,
+        email: req.body.email,
+        password: req.body.password,
+        role: req.body.roles,
+        passwordConfirm: req.body.passwordConfirm,
+        employment_history: req.body.employment_history,
+        driving_record: req.body.driving_record,
+        physical_abilities: req.body.physical_abilities,
+        Availability: req.body.Availability
+    })
+    
+    let token = await Token.create({
+        userId: driver._id,
+        token: crypto.randomBytes(32).toString("hex"),
+    });
+
+    const verifyURL = `${process.env.FRONT_END_URL}verify/${driver._id}/${token.token}`;
+
+    if (verifyURL) {
+        EmailVerify(verifyURL, driver)
+    }
+
+    createSendToken(driver, 201, res);
+})
+
+//seller function
+exports.sellerSignup = catchAsync(async(req, res, next)=>{
+    let sellerEmail = await User.findOne({ email: req.body.email });
+    if(sellerEmail){
+        return next(new AppError('Seller with given email already exist!', 400));
+    }
+
+    const newSeller = await User.create({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phoneNumber: req.body.phoneNumber,
+        agreed: req.body.agreed,
+        email: req.body.email,
+        password: req.body.password,
+        role: req.body.roles,
+        passwordConfirm: req.body.passwordConfirm,
+        business_Descriptions: req.body.business_Descriptions,
+        shopName: req.body.shopName,
+        payment_info: req.body.payment_info
+    })
+
+    let token = await Token.create({
+        userId: newSeller._id,
+        token: crypto.randomBytes(32).toString("hex"),
+    });
+
+    const verifyURL = `${process.env.FRONT_END_URL}verify/${newSeller._id}/${token.token}`;
+
+    if (verifyURL) {
+        EmailVerify(verifyURL, newSeller)
+    }
+
+    createSendToken(newSeller, 201, res);
+})
+
+//admin
+exports.adminSignup = catchAsync(async(req, res, next)=>{
+    let adminMail = await User.findOne({email: req.body.email})
+    if(adminMail){
+        return next(new AppError('Admin with given email already exist!', 400));
+    }
+
+    const admin = await User.create({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phoneNumber: req.body.phoneNumber,
+        agreed: req.body.agreed,
+        email: req.body.email,
+        password: req.body.password,
+        role: req.body.roles,
+        passwordConfirm: req.body.passwordConfirm,
+    })
+
+    let token = await Token.create({
+        userId: admin._id,
+        token: crypto.randomBytes(32).toString("hex"),
+    });
+
+    const verifyURL = `${process.env.FRONT_END_URL}verify/${admin._id}/${token.token}`;
+
+    if (verifyURL) {
+        EmailVerify(verifyURL, admin)
+    }
+
+    createSendToken(admin, 201, res);
+
+})

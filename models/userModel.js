@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { string } = require('joi');
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -73,6 +74,31 @@ const userSchema = new mongoose.Schema({
         default: true,
         select: false
     },
+//Drivers field
+    employment_history:{
+       type:String,
+    },
+    driving_record:{
+        type: String
+    },
+    physical_abilities:{
+        type: String
+    },
+    Availability:{
+        type: String
+    },
+    //Sellers field
+    business_Descriptions:{
+        type: String
+    },
+    shopName:{
+        type: String,
+        unique: true
+    },
+    payment_info:{
+        type:String
+    },
+    
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date
