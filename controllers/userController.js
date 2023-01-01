@@ -1,6 +1,7 @@
 const User = require("./../models/userModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
+const jwt = require("jsonwebtoken");
 const {
   getAll,
   getOne,
@@ -63,10 +64,15 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 exports.updateAddressDetails = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  /**
-   * verify that it's user trying to update details
-   */
-  // not able to implement this because i get error of jwt malfunctioned
+  // verify that it's user trying to update details
+  const token = req.headers.authorization.split(" ")[1];
+  const decodeToken = jwt.verify(token, process.env.JWT_SECRET);
+
+  if (id !== decodeToken.id) {
+    return next(
+      new AppError("You're not authorized to carry out this request", 401)
+    );
+  }
 
   const user = await User.findById(id).populate("addressDetails");
 
