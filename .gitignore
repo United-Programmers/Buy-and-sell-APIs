@@ -1,6 +1,8 @@
 
 .history/
 # Logs
+
+.history/
 logs
 *.log
 npm-debug.log*
@@ -104,3 +106,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# development
+tasks.txt

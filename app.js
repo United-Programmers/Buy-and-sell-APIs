@@ -10,6 +10,10 @@ const cors = require('cors');
 const compression = require('compression');
 
 const userRouter = require('./routes/userRoutes');
+const productRouter = require('./routes/productRoutes');
+const messageRouter = require('./routes/messageRoutes');
+const chatRouter = require('./routes/chatRoute')
+const reviewRouter = require('./routes/reviewRoutes');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -44,6 +48,11 @@ app.use((req, res, next) => {
 
 app.use(cors())
 app.use('/api/v1/users', userRouter)
+app.use('/api/v1/products', productRouter)
+app.use('/api/v1/messages', messageRouter)
+app.use('/api/v1/chats', chatRouter)
+app.use('/api/v1/reviews', reviewRouter)
+
 
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
