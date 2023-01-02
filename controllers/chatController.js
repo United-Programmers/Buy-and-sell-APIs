@@ -35,11 +35,11 @@ exports.createChat = catchAsync(async (req, res, next) => {
  * Delete chat
  */
 exports.deleteChat = catchAsync(async (req, res, next) => {
-  let {chatId} = req.params;
+  let { chatId } = req.params;
 
   const chatExist = await ChatModel.findById(chatId)
 
-  if(!chatExist){
+  if (!chatExist) {
     return next(new AppError(`Chat with id ${chatId} does not exist`, 404))
   }
 
