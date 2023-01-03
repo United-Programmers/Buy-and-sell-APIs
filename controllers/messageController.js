@@ -26,7 +26,7 @@ exports.createMesage = catchAsync(async (req, res, next) => {
 
   // check chat group and authorize
   if(chatExist.group){
-    if(chatExist.group === CHAT_GROUP.ADMIN_TO_SELLERS || chatexist.group === CHAT_GROUP.ADMIN_TO_DRIVERS &&  decodedToken.role !== 'admin'){
+    if(chatExist.group === CHAT_GROUP.ADMIN_TO_SELLERS || chatExist.group === CHAT_GROUP.ADMIN_TO_DRIVERS &&  decodedToken.role !== 'admin'){
       return next(new AppError("You are not authorized to send message", 401))
     }
 
