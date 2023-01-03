@@ -9,7 +9,7 @@ exports.chatSocket = (app) => {
 
     // login
     socket.on("login", (data) => {
-      const {userId,sellerId, role} = data;
+      const {userId, role} = data;
       // check if user is already active
       if(!activeUsers.find(user => user.userId === userId)){
         activeUsers.push({
@@ -24,10 +24,6 @@ exports.chatSocket = (app) => {
 
       if(role === 'driver'){
         socket.join('ADMIN_TO_DRIVERS')
-      }
-
-      if(sellerId){
-        socket.join(`SELLERS_TO_BUYERS_${sellerId}`)
       }
 
       io.emit('active-users', activeUsers)
