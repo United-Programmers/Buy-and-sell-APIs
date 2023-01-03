@@ -11,9 +11,11 @@ const {
   forgetEmail,
   ApproveLecturer,
 } = require("../utils/verifyEmail");
+const { addUserToChat } = require("./chatController");
+const { CHAT_GROUP } = require("../models/chatModel");
 
 const signToken = (id, role) => {
-  return jwt.sign({ id , role }, process.env.JWT_SECRET, {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
@@ -74,7 +76,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
-
 
 //* SIGN UP
 exports.userSignUp = catchAsync(async (req, res, next) => {
@@ -232,108 +233,111 @@ exports.restrictTo = (...roles) => {
   };
 };
 
-
 //drivers function
-exports.driverSignup = catchAsync(async(req, res, next)=>{
-    let driverEmail = await User.findOne({ email: req.body.email });
-    if(driverEmail){
-        return next(new AppError('Driver with given email already exist!', 400));
-    }
+exports.driverSignup = catchAsync(async (req, res, next) => {
+  let driverEmail = await User.findOne({ email: req.body.email });
+  if (driverEmail) {
+    return next(new AppError("Driver with given email already exist!", 400));
+  }
 
-    const driver = await User.create({
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        phoneNumber: req.body.phoneNumber,
-        agreed: req.body.agreed,
-        email: req.body.email,
-        password: req.body.password,
-        role: req.body.roles,
-        passwordConfirm: req.body.passwordConfirm,
-        employment_history: req.body.employment_history,
-        driving_record: req.body.driving_record,
-        physical_abilities: req.body.physical_abilities,
-        Availability: req.body.Availability
-    })
-    
-    let token = await Token.create({
-        userId: driver._id,
-        token: crypto.randomBytes(32).toString("hex"),
-    });
+  const driver = await User.create({
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    phoneNumber: req.body.phoneNumber,
+    agreed: req.body.agreed,
+    email: req.body.email,
+    password: req.body.password,
+    role: req.body.roles,
+    passwordConfirm: req.body.passwordConfirm,
+    employment_history: req.body.employment_history,
+    driving_record: req.body.driving_record,
+    physical_abilities: req.body.physical_abilities,
+    Availability: req.body.Availability,
+  });
 
-    const verifyURL = `${process.env.FRONT_END_URL}verify/${driver._id}/${token.token}`;
+  // add driver to drivers chat
+  addUserToChat(CHAT_GROUP.ADMIN_TO_DRIVERS, driver._id);
 
-    if (verifyURL) {
-        EmailVerify(verifyURL, driver)
-    }
+  let token = await Token.create({
+    userId: driver._id,
+    token: crypto.randomBytes(32).toString("hex"),
+  });
 
-    createSendToken(driver, 201, res);
-})
+  const verifyURL = `${process.env.FRONT_END_URL}verify/${driver._id}/${token.token}`;
+
+  if (verifyURL) {
+    EmailVerify(verifyURL, driver);
+  }
+
+  createSendToken(driver, 201, res);
+});
 
 //seller function
-exports.sellerSignup = catchAsync(async(req, res, next)=>{
-    let sellerEmail = await User.findOne({ email: req.body.email });
-    if(sellerEmail){
-        return next(new AppError('Seller with given email already exist!', 400));
-    }
+exports.sellerSignup = catchAsync(async (req, res, next) => {
+  let sellerEmail = await User.findOne({ email: req.body.email });
+  if (sellerEmail) {
+    return next(new AppError("Seller with given email already exist!", 400));
+  }
 
-    const newSeller = await User.create({
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        phoneNumber: req.body.phoneNumber,
-        agreed: req.body.agreed,
-        email: req.body.email,
-        password: req.body.password,
-        role: req.body.roles,
-        passwordConfirm: req.body.passwordConfirm,
-        business_Descriptions: req.body.business_Descriptions,
-        shopName: req.body.shopName,
-        payment_info: req.body.payment_info
-    })
+  const newSeller = await User.create({
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    phoneNumber: req.body.phoneNumber,
+    agreed: req.body.agreed,
+    email: req.body.email,
+    password: req.body.password,
+    role: req.body.roles,
+    passwordConfirm: req.body.passwordConfirm,
+    business_Descriptions: req.body.business_Descriptions,
+    shopName: req.body.shopName,
+    payment_info: req.body.payment_info,
+  });
 
-    let token = await Token.create({
-        userId: newSeller._id,
-        token: crypto.randomBytes(32).toString("hex"),
-    });
+  // add seller to sellers chat
+  addUserToChat(CHAT_GROUP.ADMIN_TO_SELLERS, newSeller._id);
 
-    const verifyURL = `${process.env.FRONT_END_URL}verify/${newSeller._id}/${token.token}`;
+  let token = await Token.create({
+    userId: newSeller._id,
+    token: crypto.randomBytes(32).toString("hex"),
+  });
 
-    if (verifyURL) {
-        EmailVerify(verifyURL, newSeller)
-    }
+  const verifyURL = `${process.env.FRONT_END_URL}verify/${newSeller._id}/${token.token}`;
 
-    createSendToken(newSeller, 201, res);
-})
+  if (verifyURL) {
+    EmailVerify(verifyURL, newSeller);
+  }
+
+  createSendToken(newSeller, 201, res);
+});
 
 //admin
-exports.adminSignup = catchAsync(async(req, res, next)=>{
-    let adminMail = await User.findOne({email: req.body.email})
-    if(adminMail){
-        return next(new AppError('Admin with given email already exist!', 400));
-    }
+exports.adminSignup = catchAsync(async (req, res, next) => {
+  let adminMail = await User.findOne({ email: req.body.email });
+  if (adminMail) {
+    return next(new AppError("Admin with given email already exist!", 400));
+  }
 
-    const admin = await User.create({
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        phoneNumber: req.body.phoneNumber,
-        agreed: req.body.agreed,
-        email: req.body.email,
-        password: req.body.password,
-        role: req.body.roles,
-        passwordConfirm: req.body.passwordConfirm,
-    })
+  const admin = await User.create({
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    phoneNumber: req.body.phoneNumber,
+    agreed: req.body.agreed,
+    email: req.body.email,
+    password: req.body.password,
+    role: req.body.roles,
+    passwordConfirm: req.body.passwordConfirm,
+  });
 
-    let token = await Token.create({
-        userId: admin._id,
-        token: crypto.randomBytes(32).toString("hex"),
-    });
+  let token = await Token.create({
+    userId: admin._id,
+    token: crypto.randomBytes(32).toString("hex"),
+  });
 
-    const verifyURL = `${process.env.FRONT_END_URL}verify/${admin._id}/${token.token}`;
+  const verifyURL = `${process.env.FRONT_END_URL}verify/${admin._id}/${token.token}`;
 
-    if (verifyURL) {
-        EmailVerify(verifyURL, admin)
-    }
+  if (verifyURL) {
+    EmailVerify(verifyURL, admin);
+  }
 
-    createSendToken(admin, 201, res);
-
-})
-
+  createSendToken(admin, 201, res);
+});
