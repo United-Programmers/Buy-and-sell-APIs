@@ -8,6 +8,10 @@ const CHAT_GROUP = {
 
 const chatSchema = new mongoose.Schema(
   {
+    ownerId: {
+      type: String,
+      default: null
+    },
     members: {
       type: Array,
     },
