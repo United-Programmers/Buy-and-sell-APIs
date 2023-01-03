@@ -1,7 +1,7 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const jwt = require("jsonwebtoken");
-const ChatModel = require("../models/chatModel");
+const {ChatModel} = require("../models/chatModel");
 const MessageModel = require("../models/messageModel");
 
 /**
@@ -21,7 +21,13 @@ exports.createMesage = catchAsync(async (req, res, next) => {
   }
 
   let decodedToken = jwt.decode(token, process.env.JWT_SECRET);
+  console.log(decodedToken)
   let senderId = decodedToken.id;
+
+  // check chat group and authorize
+  if(chatExist.group){
+
+  }
 
   let message = await new MessageModel({
     chatId,
