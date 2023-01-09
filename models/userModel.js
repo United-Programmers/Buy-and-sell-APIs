@@ -62,13 +62,13 @@ const userSchema = new mongoose.Schema({
     },
   },
   //Drivers field
-  employment_history: {
+  employmentHistory: {
     type: String,
   },
-  driving_record: {
+  drivingRecord: {
     type: String
   },
-  physical_abilities: {
+  physicalAbilities: {
     type: String
   },
   Availability: {

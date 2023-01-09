@@ -233,8 +233,24 @@ exports.restrictTo = (...roles) => {
   };
 };
 
-//drivers function
+/**
+ * Driver registration
+ */
 exports.driverSignup = catchAsync(async (req, res, next) => {
+  const {
+    firstname,
+    lastname,
+    phoneNumber,
+    agreed,
+    email,
+    password,
+    passwordConfirm,
+    employmentHistory,
+    drivingRecord,
+    physicalAbilities,
+    availability,
+  } = req.body;
+
   let driverEmail = await User.findOne({ email: req.body.email });
   if (driverEmail) {
     return next(new AppError("Driver with given email already exist!", 400));
@@ -272,7 +288,9 @@ exports.driverSignup = catchAsync(async (req, res, next) => {
   createSendToken(driver, 201, res);
 });
 
-//seller function
+/**
+ * Seller registration
+ */
 exports.sellerSignup = catchAsync(async (req, res, next) => {
   let sellerEmail = await User.findOne({ email: req.body.email });
   if (sellerEmail) {
