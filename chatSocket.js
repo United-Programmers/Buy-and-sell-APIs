@@ -42,8 +42,17 @@ exports.chatSocket = (app) => {
 
 
     // disconnect 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (data) => {
+      const {role} = data;
       activeUsers = activeUsers.filter(user => user.socketId !== socket.id);
+
+      if(role == 'seller'){
+        socket.leave('ADMIN_TO_SELLERS')
+      }
+
+      if(role === 'driver'){
+        socket.leave('ADMIN_TO_DRIVERS')
+      }
 
       io.emit('active-users', activeUsers)
     })
