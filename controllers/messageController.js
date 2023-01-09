@@ -1,8 +1,9 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const jwt = require("jsonwebtoken");
-const ChatModel = require("../models/chatModel");
+const {ChatModel, CHAT_GROUP} = require("../models/chatModel");
 const MessageModel = require("../models/messageModel");
+const { addUserToChat } = require("./chatController");
 
 /**
  * create new message
@@ -22,6 +23,17 @@ exports.createMesage = catchAsync(async (req, res, next) => {
 
   let decodedToken = jwt.decode(token, process.env.JWT_SECRET);
   let senderId = decodedToken.id;
+
+  // check chat group and authorize
+  if(chatExist.group){
+    if(chatExist.group === CHAT_GROUP.ADMIN_TO_SELLERS || chatExist.group === CHAT_GROUP.ADMIN_TO_DRIVERS &&  decodedToken.role !== 'admin'){
+      return next(new AppError("You are not authorized to send message", 401))
+    }
+
+    if(chatExist.group === CHAT_GROUP.SELLERS_TO_BUYERS &&  decodedToken.role !== 'seller'){
+      return next(new AppError("You are not authorized to send message", 401))
+    }
+  }
 
   let message = await new MessageModel({
     chatId,

@@ -62,27 +62,30 @@ const userSchema = new mongoose.Schema({
     },
   },
   //Drivers field
-  employment_history: {
+  employmentHistory: {
     type: String,
   },
-  driving_record: {
+  drivingRecord: {
     type: String
   },
-  physical_abilities: {
+  physicalAbilities: {
     type: String
   },
-  Availability: {
+  availability: {
     type: String
   },
   //Sellers field
-  business_Descriptions: {
+  businessDescriptions: {
     type: String
   },
   shopName: {
     type: String,
-    unique: true
+    trim: true,
+    unique: true,
+    nullable: true,
+    default: null
   },
-  payment_info: {
+  paymentInfo: {
     type: String
   },
   verified: {
@@ -113,6 +116,7 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
+
   next();
 });
 

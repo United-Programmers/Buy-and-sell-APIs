@@ -4,7 +4,7 @@
     "description": "this is a security check in application",
     "main": "index.js",
     "engines": {
-        "node": "14.x"
+        "node": "v16.16.0"
     },
     "scripts": {
         "start": "node index.js",
@@ -34,6 +34,7 @@
         "nodemon": "^2.0.20",
         "sharp": "^0.31.0",
         "slugify": "^1.6.5",
+        "socket.io": "^4.5.4",
         "xss-clean": "^0.1.1"
     }
 }
