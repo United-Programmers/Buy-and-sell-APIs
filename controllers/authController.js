@@ -237,39 +237,12 @@ exports.restrictTo = (...roles) => {
  * Driver registration
  */
 exports.driverSignup = catchAsync(async (req, res, next) => {
-  const {
-    firstname,
-    lastname,
-    phoneNumber,
-    agreed,
-    email,
-    password,
-    passwordConfirm,
-    employmentHistory,
-    drivingRecord,
-    physicalAbilities,
-    availability,
-  } = req.body;
-
   let driverEmail = await User.findOne({ email: req.body.email });
   if (driverEmail) {
     return next(new AppError("Driver with given email already exist!", 400));
   }
 
-  const driver = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    phoneNumber: req.body.phoneNumber,
-    agreed: req.body.agreed,
-    email: req.body.email,
-    password: req.body.password,
-    role: req.body.roles,
-    passwordConfirm: req.body.passwordConfirm,
-    employment_history: req.body.employment_history,
-    driving_record: req.body.driving_record,
-    physical_abilities: req.body.physical_abilities,
-    Availability: req.body.Availability,
-  });
+  const driver = await new User({ ...req.body, role: "driver" }).save();
 
   // add driver to drivers chat
   addUserToChat(CHAT_GROUP.ADMIN_TO_DRIVERS, driver._id);
@@ -298,17 +271,8 @@ exports.sellerSignup = catchAsync(async (req, res, next) => {
   }
 
   const newSeller = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    phoneNumber: req.body.phoneNumber,
-    agreed: req.body.agreed,
-    email: req.body.email,
-    password: req.body.password,
-    role: req.body.roles,
-    passwordConfirm: req.body.passwordConfirm,
-    business_Descriptions: req.body.business_Descriptions,
-    shopName: req.body.shopName,
-    payment_info: req.body.payment_info,
+    ...req.body,
+    role: "seller",
   });
 
   // add seller to sellers chat
