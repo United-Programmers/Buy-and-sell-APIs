@@ -11,6 +11,7 @@ const CartModel = require("../models/cartModel");
 const Products = require("../models/productModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
+const { decodeToken } = require("./authController");
 const { deleteOne, updateOne, createOne, getAll } = require("./handleFactory");
 
 exports.getAllCartProduct = getAll(CartModel);
@@ -18,12 +19,16 @@ exports.createCartProduct = createOne(CartModel);
 exports.updateCartProduct = updateOne(CartModel);
 exports.deleteCartProduct = deleteOne(CartModel);
 
-
 /**
- * Add product to cart 
+ * Add product to cart
  */
 exports.addProductToCart = catchAsync(async (req, res) => {
-  const { productId, userId, color, size, quantity } = req.body;
+  const { productId, color, size, quantity } = req.body;
+
+  let decodedJwtToken = await decodeToken(
+    req.headers.authorization.split(" ")[1]
+  );
+  let userId = decodedJwtToken.id;
 
   const productExist = await Products.findById(productId);
   const cartExist = await CartModel.findOne({ userId });
@@ -89,3 +94,65 @@ exports.addProductToCart = catchAsync(async (req, res) => {
     data: newCart,
   });
 });
+
+/**
+ * remove cart item
+ */
+exports.removeItem = catchAsync(async (req, res) => {
+  const productId = req.params.id;
+  let decodedJwtToken = await decodeToken(
+    req.headers.authorization.split(" ")[1]
+  );
+
+  let cart = await CartModel.findOne({
+    userId: decodedJwtToken.id,
+  });
+
+  if (!cart) {
+    throw new AppError("no cart found with supplied id", 404);
+  }
+
+  let productIndex = cart.items.findIndex(item => item.product == productId);
+
+  if(productIndex < 0){
+    return res.status(200).json({
+        status: "failed",
+        message: "item not found in cart",
+        data: cart
+    })
+  }
+
+  cart.totalQuantity -= cart.items[productIndex].totalProductQuantity;
+  cart.totalPrice -= cart.items[productIndex].totalProductPrice;
+  cart.items.splice(productIndex, 1);
+
+  let result = await cart.save();
+
+  return res.status(200).json({
+    status: "success",
+    data: result,
+  });
+});
+
+
+/**
+ * Get user cart 
+ */
+exports.getUserCart = catchAsync(async (req, res) => {
+    let decodedJwtToken = await decodeToken(
+        req.headers.authorization.split(" ")[1]
+      );
+    
+      let cart = await CartModel.findOne({
+        userId: decodedJwtToken.id,
+      });
+
+      if(!cart){
+        throw new AppError("No cart exist for this user", 404);
+      }
+
+      return res.status(200).json({
+        status: "success",
+        data: cart
+      })
+})
