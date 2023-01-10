@@ -1,13 +1,13 @@
 const express = require('express');
-const { getAllCartProduct, createCartProduct, updateCartProduct, deleteCartProduct } = require("../controllers/addToCartController");
-const { protect, restrictTo } = require('./../controllers/authController');
+const { getAllCartProduct, createCartProduct, updateCartProduct, deleteCartProduct, addProductToCart } = require("../controllers/cartController");
+const { protect, restrictTo } = require('../controllers/authController');
 
 const router = express.Router({ mergeParams: true });
 
 router
     .route('/')
     .get(getAllCartProduct)
-    .post(protect, createCartProduct);
+    .post(addProductToCart);
 
 router
     .route('/:id')

@@ -14,7 +14,7 @@ const productRouter = require('./routes/productRoutes');
 const messageRouter = require('./routes/messageRoutes');
 const chatRouter = require('./routes/chatRoute')
 const reviewRouter = require('./routes/reviewRoutes');
-const addToCartRouter = require('./routes/addToCartRoutes');
+const cartRouter = require('./routes/cartRoutes');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -53,7 +53,7 @@ app.use('/api/v1/products', productRouter)
 app.use('/api/v1/messages', messageRouter)
 app.use('/api/v1/chats', chatRouter)
 app.use('/api/v1/reviews', reviewRouter)
-app.use('/api/v1/carts', addToCartRouter)
+app.use('/api/v1/cart', cartRouter)
 
 
 app.all('*', (req, res, next) => {
