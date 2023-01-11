@@ -12,7 +12,7 @@ const Products = require("../models/productModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const { decodeToken } = require("./authController");
-const { deleteOne, updateOne, createOne, getAll } = require("./handleFactory");
+const { getAll } = require("./handleFactory");
 
 /**
  * get all carts
