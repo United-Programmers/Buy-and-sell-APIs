@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllCartProduct, createCartProduct, updateCartProduct, deleteCartProduct, addProductToCart, removeItem, getUserCart } = require("../controllers/cartController");
+const { getAllCartProduct, createCartProduct, updateCartProduct, deleteCartProduct, addProductToCart, removeItem, getUserCart, increaseByOne, decreaseByOne } = require("../controllers/cartController");
 const { protect, restrictTo } = require('../controllers/authController');
 
 const router = express.Router({ mergeParams: true });
@@ -10,10 +10,11 @@ router
     .post(protect, addProductToCart);
 
 router.get('/user', protect, getUserCart);
+router.patch('/:productId/quantity/increase', increaseByOne)
+router.patch('/:productId/quantity/decrease', decreaseByOne)
 
 router
     .route('/:id')
-    .patch(protect, updateCartProduct)
     .delete(protect, removeItem)
 
 module.exports = router;

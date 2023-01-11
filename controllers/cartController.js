@@ -14,10 +14,10 @@ const catchAsync = require("../utils/catchAsync");
 const { decodeToken } = require("./authController");
 const { deleteOne, updateOne, createOne, getAll } = require("./handleFactory");
 
+/**
+ * get all carts
+ */
 exports.getAllCartProduct = getAll(CartModel);
-exports.createCartProduct = createOne(CartModel);
-exports.updateCartProduct = updateOne(CartModel);
-exports.deleteCartProduct = deleteOne(CartModel);
 
 /**
  * Add product to cart
@@ -45,8 +45,7 @@ exports.addProductToCart = catchAsync(async (req, res) => {
     if (indexOfProduct > -1) {
       cart.items[indexOfProduct].totalProductQuantity += quantity;
       cart.items[indexOfProduct].totalProductPrice =
-        cart.items[indexOfProduct].totalProductQuantity *
-        product.price;
+        cart.items[indexOfProduct].totalProductQuantity * product.price;
       cart.items[indexOfProduct].color = color;
       cart.items[indexOfProduct].size = size;
 
@@ -112,14 +111,14 @@ exports.removeItem = catchAsync(async (req, res) => {
     throw new AppError("no cart found with supplied id", 404);
   }
 
-  let productIndex = cart.items.findIndex(item => item.product == productId);
+  let productIndex = cart.items.findIndex((item) => item.product == productId);
 
-  if(productIndex < 0){
+  if (productIndex < 0) {
     return res.status(200).json({
-        status: "failed",
-        message: "item not found in cart",
-        data: cart
-    })
+      status: "failed",
+      message: "item not found in cart",
+      data: cart,
+    });
   }
 
   cart.totalQuantity -= cart.items[productIndex].totalProductQuantity;
@@ -134,25 +133,114 @@ exports.removeItem = catchAsync(async (req, res) => {
   });
 });
 
-
 /**
- * Get user cart 
+ * Get user cart
  */
 exports.getUserCart = catchAsync(async (req, res) => {
-    let decodedJwtToken = await decodeToken(
-        req.headers.authorization.split(" ")[1]
-      );
-    
-      let cart = await CartModel.findOne({
-        userId: decodedJwtToken.id,
-      });
+  let decodedJwtToken = await decodeToken(
+    req.headers.authorization.split(" ")[1]
+  );
 
-      if(!cart){
-        throw new AppError("No cart exist for this user", 404);
-      }
+  let cart = await CartModel.findOne({
+    userId: decodedJwtToken.id,
+  });
 
-      return res.status(200).json({
-        status: "success",
-        data: cart
-      })
-})
+  if (!cart) {
+    throw new AppError("No cart exist for this user", 404);
+  }
+
+  return res.status(200).json({
+    status: "success",
+    data: cart,
+  });
+});
+
+/**
+ * increase product quantity by one
+ */
+exports.increaseByOne = catchAsync(async (req, res) => {
+  let { productId } = req.params;
+
+  let decodedJwtToken = await decodeToken(
+    req.headers.authorization.split(" ")[1]
+  );
+
+  let cart = await CartModel.findOne({
+    userId: decodedJwtToken.id,
+  });
+
+  let productIndexInCart = cart.items.findIndex(
+    (item) => item.product.toString() === productId.toString()
+  );
+
+  console.log(productIndexInCart);
+
+  if (productIndexInCart < 0) {
+    throw new AppError("product not found in cart", 404);
+  }
+
+  cart.items[productIndexInCart].totalProductQuantity += 1;
+  recalculateCart(cart);
+
+  let result = await cart.save();
+
+  return res.status(200).json({
+    status: "success",
+    data: result,
+  });
+});
+
+/**
+ * decrease product quantity by one
+ */
+exports.decreaseByOne = catchAsync(async (req, res) => {
+  let { productId } = req.params;
+
+  let decodedJwtToken = await decodeToken(
+    req.headers.authorization.split(" ")[1]
+  );
+
+  let cart = await CartModel.findOne({
+    userId: decodedJwtToken.id,
+  });
+
+  let productIndexInCart = cart.items.findIndex(
+    (item) => item.product.toString() === productId.toString()
+  );
+
+  if (productIndexInCart < 0) {
+    throw new AppError("product not found in cart", 404);
+  }
+
+  cart.items[productIndexInCart].totalProductQuantity <= 1
+    ? (cart.items[productIndexInCart].totalProductQuantity = 1)
+    : (cart.items[productIndexInCart].totalProductQuantity -= 1);
+  recalculateCart(cart);
+
+  let result = await cart.save();
+
+  return res.status(200).json({
+    status: "success",
+    data: result,
+  });
+});
+
+/**
+ * recalculate cart total item and price
+ */
+
+const recalculateCart = (cart) => {
+  let price = [];
+  let quantity = [];
+  cart.items.forEach((item) => {
+    quantity.push(item.totalProductQuantity);
+    price.push(item.totalProductQuantity * item.totalProductPrice);
+  });
+
+  cart.totalQuantity = quantity.reduce((a, b) => total);
+  cart.totalPrice = price.reduce((a, b) => total);
+
+  console.log(cart);
+
+  return cart;
+};
