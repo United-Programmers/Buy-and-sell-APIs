@@ -9,12 +9,16 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const compression = require('compression');
 
+/**
+ * routers
+ */
 const userRouter = require('./routes/userRoutes');
 const productRouter = require('./routes/productRoutes');
 const messageRouter = require('./routes/messageRoutes');
 const chatRouter = require('./routes/chatRoute')
 const reviewRouter = require('./routes/reviewRoutes');
 const cartRouter = require('./routes/cartRoutes');
+const orderRouter = require('./routes/orderRoutes');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -54,6 +58,7 @@ app.use('/api/v1/messages', messageRouter)
 app.use('/api/v1/chats', chatRouter)
 app.use('/api/v1/reviews', reviewRouter)
 app.use('/api/v1/cart', cartRouter)
+app.use('/api/v1/order', orderRouter)
 
 
 app.all('*', (req, res, next) => {

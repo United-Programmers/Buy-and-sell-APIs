@@ -1,8 +1,7 @@
-const crypto = require('crypto');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const { string } = require('joi');
-
+const crypto = require("crypto");
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const { string } = require("joi");
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -66,27 +65,27 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   drivingRecord: {
-    type: String
+    type: String,
   },
   physicalAbilities: {
-    type: String
+    type: String,
   },
   availability: {
-    type: String
+    type: String,
   },
   //Sellers field
   businessDescriptions: {
-    type: String
+    type: String,
   },
   shopName: {
     type: String,
     trim: true,
     unique: true,
     nullable: true,
-    default: null
+    default: null,
   },
   paymentInfo: {
-    type: String
+    type: String,
   },
   verified: {
     type: Boolean,
@@ -109,7 +108,6 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
-
 });
 
 userSchema.pre("save", async function (next) {
