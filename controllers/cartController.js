@@ -30,46 +30,46 @@ exports.addProductToCart = catchAsync(async (req, res) => {
   );
   let userId = decodedJwtToken.id;
 
-  const productExist = await Products.findById(productId);
-  const cartExist = await CartModel.findOne({ userId });
+  const product = await Products.findById(productId);
+  const cart = await CartModel.findOne({ userId });
 
-  if (!productExist) {
+  if (!product) {
     throw new AppError("No product found with this id", 404);
   }
 
-  if (cartExist) {
-    const indexOfProduct = cartExist.items.findIndex(
+  if (cart) {
+    const indexOfProduct = cart.items.findIndex(
       (item) => item.product.toString() == productId.toString()
     );
 
     if (indexOfProduct > -1) {
-      cartExist.items[indexOfProduct].totalProductQuantity += quantity;
-      cartExist.items[indexOfProduct].totalProductPrice =
-        cartExist.items[indexOfProduct].totalProductQuantity *
-        productExist.price;
-      cartExist.items[indexOfProduct].color = color;
-      cartExist.items[indexOfProduct].size = size;
+      cart.items[indexOfProduct].totalProductQuantity += quantity;
+      cart.items[indexOfProduct].totalProductPrice =
+        cart.items[indexOfProduct].totalProductQuantity *
+        product.price;
+      cart.items[indexOfProduct].color = color;
+      cart.items[indexOfProduct].size = size;
 
-      cartExist.totalQuantity += quantity;
-      cartExist.totalPrice += quantity * productExist.price;
+      cart.totalQuantity += quantity;
+      cart.totalPrice += quantity * product.price;
     } else {
-      cartExist.items.push({
+      cart.items.push({
         product: productId,
         color: color,
         size: size,
         totalProductQuantity: quantity,
-        totalProductPrice: quantity * productExist.price,
+        totalProductPrice: quantity * product.price,
       });
 
-      cartExist.totalQuantity += quantity;
-      cartExist.totalPrice += quantity * productExist.price;
+      cart.totalQuantity += quantity;
+      cart.totalPrice += quantity * product.price;
     }
 
-    await cartExist.save();
+    await cart.save();
 
     return res.status(200).json({
       status: "success",
-      data: cartExist,
+      data: cart,
     });
   }
 
@@ -82,11 +82,11 @@ exports.addProductToCart = catchAsync(async (req, res) => {
         color: color,
         size: size,
         totalProductQuantity: quantity,
-        totalProductPrice: quantity * productExist.price,
+        totalProductPrice: quantity * product.price,
       },
     ],
     totalQuantity: quantity,
-    totalPrice: quantity * productExist.price,
+    totalPrice: quantity * product.price,
   }).save();
 
   return res.status(200).json({
