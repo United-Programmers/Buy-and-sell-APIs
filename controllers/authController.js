@@ -20,6 +20,13 @@ const signToken = (id, role) => {
   });
 };
 
+/**
+ * decode jwt token 
+ */
+exports.decodeToken = async (token) => {
+  return await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+}
+
 const createSendToken = (data, statusCode, res) => {
   const token = signToken(data._id, data.role);
   const cookieOptions = {
