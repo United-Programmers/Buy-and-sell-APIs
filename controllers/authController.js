@@ -301,20 +301,14 @@ exports.sellerSignup = catchAsync(async (req, res, next) => {
 
 //admin
 exports.adminSignup = catchAsync(async (req, res, next) => {
-  let adminMail = await User.findOne({ email: req.body.email });
-  if (adminMail) {
+  let adminExist = await User.findOne({ email: req.body.email });
+  if (adminExist) {
     return next(new AppError("Admin with given email already exist!", 400));
   }
 
   const admin = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    phoneNumber: req.body.phoneNumber,
-    agreed: req.body.agreed,
-    email: req.body.email,
-    password: req.body.password,
-    role: req.body.roles,
-    passwordConfirm: req.body.passwordConfirm,
+    ...req.body,
+    role: 'admin'
   });
 
   let token = await Token.create({
