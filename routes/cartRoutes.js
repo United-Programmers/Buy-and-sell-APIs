@@ -1,6 +1,6 @@
 const express = require('express');
 const { getAllCartProduct, createCartProduct, updateCartProduct, deleteCartProduct, addProductToCart, removeItem, getUserCart, increaseByOne, decreaseByOne } = require("../controllers/cartController");
-const { protect, restrictTo } = require('../controllers/authController');
+const { protect } = require('../controllers/authController');
 
 const router = express.Router({ mergeParams: true });
 

@@ -42,7 +42,7 @@ const cartSchema = new mongoose.Schema(
   }
 );
 
-const Cart = mongoose.model("Cart", cartSchema);
+const CartModel = mongoose.model("Cart", cartSchema);
 
 cartSchema.pre(/^find/, function (next) {
   this.populate("userId").populate({
@@ -53,4 +53,4 @@ cartSchema.pre(/^find/, function (next) {
   next();
 });
 
-module.exports = Cart;
+module.exports = CartModel;
