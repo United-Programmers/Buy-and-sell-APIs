@@ -10,8 +10,8 @@ router
     .post(protect, addProductToCart);
 
 router.get('/user', protect, getUserCart);
-router.patch('/:productId/quantity/increase', increaseByOne)
-router.patch('/:productId/quantity/decrease', decreaseByOne)
+router.patch('/:productId/quantity/increase',protect, increaseByOne)
+router.patch('/:productId/quantity/decrease',protect, decreaseByOne)
 
 router
     .route('/:id')
