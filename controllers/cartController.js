@@ -22,7 +22,7 @@ exports.getAllCartProduct = getAll(CartModel);
 /**
  * Add product to cart
  */
-exports.addProductToCart = catchAsync(async (req, res) => {
+exports.addProductToCart = catchAsync(async (req, res, next) => {
   const { productId, color, size, quantity } = req.body;
   let userId = req.user;
 
@@ -93,7 +93,7 @@ exports.addProductToCart = catchAsync(async (req, res) => {
 /**
  * remove cart item
  */
-exports.removeItem = catchAsync(async (req, res) => {
+exports.removeItem = catchAsync(async (req, res, next) => {
   const productId = req.params.id;
   let userId = req.user;
 
@@ -130,7 +130,7 @@ exports.removeItem = catchAsync(async (req, res) => {
 /**
  * Get user cart
  */
-exports.getUserCart = catchAsync(async (req, res) => {
+exports.getUserCart = catchAsync(async (req, res, next) => {
   let userId = req.user;
 
   let cart = await CartModel.findOne({
@@ -153,7 +153,7 @@ exports.getUserCart = catchAsync(async (req, res) => {
 /**
  * increase product quantity by one
  */
-exports.increaseByOne = catchAsync(async (req, res) => {
+exports.increaseByOne = catchAsync(async (req, res, next) => {
   let { productId } = req.params;
   let userId = req.user;
 
@@ -185,7 +185,7 @@ exports.increaseByOne = catchAsync(async (req, res) => {
 /**
  * decrease product quantity by one
  */
-exports.decreaseByOne = catchAsync(async (req, res) => {
+exports.decreaseByOne = catchAsync(async (req, res, next) => {
   let { productId } = req.params;
   let userId = req.user;
 

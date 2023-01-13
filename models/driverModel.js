@@ -93,6 +93,12 @@ const driverSchema = new mongoose.Schema({
     type: mongoose.SchemaTypes.ObjectId,
     ref: "AddressDetails",
   },
+  assignedOrders: [
+    {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'Order'
+    }
+  ],
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,

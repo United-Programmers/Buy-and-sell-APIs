@@ -1,14 +1,13 @@
 const CartModel = require("../models/cartModel");
+const DriverModel = require("../models/driverModel");
 const OrderModel = require("../models/orderModel");
-const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const { decodeToken } = require("./authController");
 
 /**
  * create new order
  */
-exports.createOrder = catchAsync(async (req, res) => {
+exports.createOrder = catchAsync(async (req, res, next) => {
   const { cartId } = req.body;
   let userId = req.user;
 
@@ -45,7 +44,7 @@ exports.createOrder = catchAsync(async (req, res) => {
 /**
  * get user orders
  */
-exports.getUserOrders = catchAsync(async (req, res) => {
+exports.getUserOrders = catchAsync(async (req, res, next) => {
   const { filter } = req.query;
   let userId = req.user._id;
   let orders;
@@ -70,7 +69,7 @@ exports.getUserOrders = catchAsync(async (req, res) => {
 /**
  * update order status
  */
-exports.updateOrderStatus = catchAsync(async (req, res) => {
+exports.updateOrderStatus = catchAsync(async (req, res, next) => {
   const { orderId, status } = req.body;
 
   let order = await OrderModel.findById(orderId);
@@ -87,3 +86,36 @@ exports.updateOrderStatus = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+/**
+ * assign order to driver
+ */
+
+exports.assignOrderToDriver = async (driverEmail, orderId) => {
+  let driver = await DriverModel.findOne({
+    email: driverEmail,
+  });
+  let order = await OrderModel.findById(orderId);
+
+  if (!driver) throw new AppError("no driver found with supplied id", 404);
+  if (!order) throw new AppError("no order found with supplied id", 404);
+
+  if(!driver.availability === "true"){
+    throw new AppError("driver not available to take orders", 403);
+  }
+
+  if(order.assignedTo){
+    throw new AppError("order already assigned to a driver", 403);
+  }
+
+  order.assignedTo = driver._id;
+  driver.assignedOrders.push(order);
+
+  await order.save()
+  await driver.save()
+
+  return {
+    driver,
+    order,
+  };
+};
