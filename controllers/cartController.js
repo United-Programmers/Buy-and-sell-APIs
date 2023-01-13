@@ -137,9 +137,6 @@ exports.getUserCart = catchAsync(async (req, res, next) => {
     userId,
   });
 
-    // test function 
-    checkIfEmailExists('admin1@gmail.com')
-
   if (!cart) {
     throw new AppError("No cart exist for this user", 404);
   }

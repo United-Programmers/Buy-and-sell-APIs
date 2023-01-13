@@ -13,8 +13,6 @@ const {
 } = require("../utils/verifyEmail");
 const { addUserToChat } = require("./chatController");
 const { CHAT_GROUP } = require("../models/chatModel");
-const DriverModel = require("../models/driverModel");
-const SellerModel = require("../models/sellerModel");
 
 const signToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -44,7 +42,7 @@ const createSendToken = (data, statusCode, res) => {
   res.status(statusCode).json({
     status: "success",
     token,
-    data
+    data,
   });
 };
 
@@ -140,7 +138,9 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!email || !password) {
     return next(new AppError("Please provide email and password!", 400));
   }
-  const user = await User.findOne({ email }).select("+password");
+
+  const user = await User.findOne({ email: email }).select("+password");
+
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError("Incorrect email or password", 401));
   }
@@ -244,13 +244,15 @@ exports.restrictTo = (...roles) => {
  * Driver registration
  */
 exports.driverSignup = catchAsync(async (req, res, next) => {
-  let emailExists = await this.checkIfEmailExists(req.body.email);
+  let emailExists = await User.findOne({
+    email: req.body.email,
+  });
 
   if (emailExists) {
     return next(new AppError("User with given email already exist!", 400));
   }
 
-  const driver = await new DriverModel({ ...req.body }).save();
+  const driver = await new User({ ...req.body, role: "driver" }).save();
 
   // add driver to drivers chat
   addUserToChat(CHAT_GROUP.ADMIN_TO_DRIVERS, driver._id);
@@ -273,12 +275,17 @@ exports.driverSignup = catchAsync(async (req, res, next) => {
  * Seller registration
  */
 exports.sellerSignup = catchAsync(async (req, res, next) => {
-  let emailExists = await this.checkIfEmailExists(req.body.email);
+  let emailExists = await User.findOne({
+    email: req.body.email,
+  });
   if (emailExists) {
     return next(new AppError("User with given email already exist!", 400));
   }
 
-  const newSeller = await new SellerModel({ ...req.body }).save();
+  const newSeller = await new User({
+    ...req.body,
+    role: "seller",
+  }).save();
 
   // add seller to sellers chat
   addUserToChat(CHAT_GROUP.ADMIN_TO_SELLERS, newSeller._id);
@@ -325,23 +332,3 @@ exports.adminSignup = catchAsync(async (req, res, next) => {
   createSendToken(admin, 201, res);
 });
 
-/**
- * this function checks [user, admin , driver , seller and super admin ] table if email exists
- */
-exports.checkIfEmailExists = async (email) => {
-  let models = [User, DriverModel, SellerModel];
-  let emailExist;
-
-  for (i = 0; i < models.length; i++) {
-    let result = await models[i].findOne({ email });
-
-    if (result) {
-      emailExist = true;
-      return emailExist;
-    } else {
-      emailExist = false;
-    }
-  }
-
-  return emailExist;
-};
