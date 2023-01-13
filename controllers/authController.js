@@ -44,9 +44,7 @@ const createSendToken = (data, statusCode, res) => {
   res.status(statusCode).json({
     status: "success",
     token,
-    data: {
-      data,
-    },
+    data
   });
 };
 
@@ -86,21 +84,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-//* SIGN UP
+/**
+ * user signup
+ */
 exports.userSignUp = catchAsync(async (req, res, next) => {
   let user = await User.findOne({ email: req.body.email });
   if (user)
     return next(new AppError("User with given email already exist!", 400));
 
-  const newUser = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    phoneNumber: req.body.phoneNumber,
-    agreed: req.body.agreed,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-  });
+  const newUser = await new User({ ...req.body }).save();
 
   let token = await Token.create({
     userId: newUser._id,
