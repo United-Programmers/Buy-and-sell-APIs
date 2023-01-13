@@ -45,6 +45,10 @@ const orderSchema = new mongoose.Schema({
         type: String,
         default: 'Not Processed',
         enum: ['Not Processed', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+    },
+    assignedTo: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Driver'
     }
 }, {
     timestamps: true

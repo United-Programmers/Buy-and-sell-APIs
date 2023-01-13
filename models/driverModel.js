@@ -1,9 +1,9 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const { string } = require("joi");
+const { string, boolean } = require("joi");
 
-const userSchema = new mongoose.Schema({
+const driverSchema = new mongoose.Schema({
   firstName: {
     type: String,
     min: 3,
@@ -35,8 +35,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "driver", "super-admin", "seller", "admin"],
-    default: "user",
+    enum: ["driver"],
+    default: "driver",
     trim: true,
   },
   photo: {
@@ -71,18 +71,7 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   availability: {
-    type: Boolean,
-  },
-  //Sellers field
-  businessDescriptions: {
-    type: String,
-  },
-  shopName: {
-    type: String,
-    trim: true,
-    unique: true,
-    nullable: true,
-    default: null,
+    type: boolean,
   },
   paymentInfo: {
     type: String,
@@ -110,7 +99,7 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: Date,
 });
 
-userSchema.pre("save", async function (next) {
+driverSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
@@ -118,20 +107,20 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-userSchema.methods.correctPassword = async function (
+driverSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-userSchema.pre("save", function (next) {
+driverSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
   this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
-userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+driverSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
@@ -142,7 +131,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
-userSchema.methods.createPasswordResetToken = function () {
+driverSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetToken = crypto
     .createHash("sha256")
@@ -153,6 +142,6 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-const User = mongoose.model("User", userSchema);
+const DriverModel = mongoose.model("Driver", driverSchema);
 
-module.exports = User;
+module.exports = DriverModel;
