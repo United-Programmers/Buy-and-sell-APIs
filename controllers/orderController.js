@@ -10,6 +10,7 @@ const { decodeToken } = require("./authController");
  */
 exports.createOrder = catchAsync(async (req, res) => {
   const { cartId } = req.body;
+  let userId = req.user;
 
   let cart = await CartModel.findById(cartId).populate({
     path: "items.product",
@@ -21,12 +22,6 @@ exports.createOrder = catchAsync(async (req, res) => {
   if (cart.items.length < 1) {
     throw new AppError("No item in cart, add item to proceed", 400);
   }
-
-  // get user id
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
-  let userId = decodedJwtToken.id;
 
   let order = await new OrderModel({
     ...req.body,
@@ -52,13 +47,7 @@ exports.createOrder = catchAsync(async (req, res) => {
  */
 exports.getUserOrders = catchAsync(async (req, res) => {
   const { filter } = req.query;
-
-  // get user id
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
-  let userId = decodedJwtToken.id;
-
+  let userId = req.user._id;
   let orders;
 
   if (filter) {
