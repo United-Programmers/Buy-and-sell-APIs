@@ -11,7 +11,7 @@ const CartModel = require("../models/cartModel");
 const Products = require("../models/productModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const { decodeToken } = require("./authController");
+const { decodeToken, checkIfEmailExists } = require("./authController");
 const { getAll } = require("./handleFactory");
 
 /**
@@ -136,6 +136,9 @@ exports.getUserCart = catchAsync(async (req, res) => {
   let cart = await CartModel.findOne({
     userId,
   });
+
+    // test function 
+    checkIfEmailExists('admin1@gmail.com')
 
   if (!cart) {
     throw new AppError("No cart exist for this user", 404);

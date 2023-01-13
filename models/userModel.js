@@ -60,30 +60,6 @@ const userSchema = new mongoose.Schema({
       message: "Passwords are not the same!",
     },
   },
-  //Drivers field
-  employmentHistory: {
-    type: String,
-  },
-  drivingRecord: {
-    type: String,
-  },
-  physicalAbilities: {
-    type: String,
-  },
-  availability: {
-    type: Boolean,
-  },
-  //Sellers field
-  businessDescriptions: {
-    type: String,
-  },
-  shopName: {
-    type: String,
-    trim: true,
-    unique: true,
-    nullable: true,
-    default: null,
-  },
   paymentInfo: {
     type: String,
   },

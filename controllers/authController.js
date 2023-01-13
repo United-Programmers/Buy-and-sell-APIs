@@ -13,6 +13,8 @@ const {
 } = require("../utils/verifyEmail");
 const { addUserToChat } = require("./chatController");
 const { CHAT_GROUP } = require("../models/chatModel");
+const DriverModel = require("../models/driverModel");
+const SellerModel = require("../models/sellerModel");
 
 const signToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -21,11 +23,11 @@ const signToken = (id, role) => {
 };
 
 /**
- * decode jwt token 
+ * decode jwt token
  */
 exports.decodeToken = async (token) => {
   return await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-}
+};
 
 const createSendToken = (data, statusCode, res) => {
   const token = signToken(data._id, data.role);
@@ -168,6 +170,9 @@ exports.logout = (req, res) => {
   res.status(200).json({ status: "success" });
 };
 
+/**
+ * forgot password function
+ */
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
@@ -215,6 +220,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+/**
+ * update password function
+ */
 exports.updatePassword = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
 
@@ -244,12 +252,13 @@ exports.restrictTo = (...roles) => {
  * Driver registration
  */
 exports.driverSignup = catchAsync(async (req, res, next) => {
-  let driverEmail = await User.findOne({ email: req.body.email });
-  if (driverEmail) {
-    return next(new AppError("Driver with given email already exist!", 400));
+  let emailExists = await this.checkIfEmailExists(req.body.email);
+
+  if (emailExists) {
+    return next(new AppError("User with given email already exist!", 400));
   }
 
-  const driver = await new User({ ...req.body, role: "driver" }).save();
+  const driver = await new DriverModel({ ...req.body }).save();
 
   // add driver to drivers chat
   addUserToChat(CHAT_GROUP.ADMIN_TO_DRIVERS, driver._id);
@@ -272,15 +281,12 @@ exports.driverSignup = catchAsync(async (req, res, next) => {
  * Seller registration
  */
 exports.sellerSignup = catchAsync(async (req, res, next) => {
-  let sellerEmail = await User.findOne({ email: req.body.email });
-  if (sellerEmail) {
-    return next(new AppError("Seller with given email already exist!", 400));
+  let emailExists = await this.checkIfEmailExists(req.body.email);
+  if (emailExists) {
+    return next(new AppError("User with given email already exist!", 400));
   }
 
-  const newSeller = await User.create({
-    ...req.body,
-    role: "seller",
-  });
+  const newSeller = await new SellerModel({ ...req.body }).save();
 
   // add seller to sellers chat
   addUserToChat(CHAT_GROUP.ADMIN_TO_SELLERS, newSeller._id);
@@ -299,7 +305,9 @@ exports.sellerSignup = catchAsync(async (req, res, next) => {
   createSendToken(newSeller, 201, res);
 });
 
-//admin
+/**
+ * Admin registration
+ */
 exports.adminSignup = catchAsync(async (req, res, next) => {
   let adminExist = await User.findOne({ email: req.body.email });
   if (adminExist) {
@@ -308,7 +316,7 @@ exports.adminSignup = catchAsync(async (req, res, next) => {
 
   const admin = await User.create({
     ...req.body,
-    role: 'admin'
+    role: "admin",
   });
 
   let token = await Token.create({
@@ -324,3 +332,24 @@ exports.adminSignup = catchAsync(async (req, res, next) => {
 
   createSendToken(admin, 201, res);
 });
+
+/**
+ * this function checks [user, admin , driver , seller and super admin ] table if email exists
+ */
+exports.checkIfEmailExists = async (email) => {
+  let models = [User, DriverModel, SellerModel];
+  let emailExist;
+
+  for (i = 0; i < models.length; i++) {
+    let result = await models[i].findOne({ email });
+
+    if (result) {
+      emailExist = true;
+      return emailExist;
+    } else {
+      emailExist = false;
+    }
+  }
+
+  return emailExist;
+};
