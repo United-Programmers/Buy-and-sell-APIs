@@ -11,7 +11,7 @@ const CartModel = require("../models/cartModel");
 const Products = require("../models/productModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const { decodeToken } = require("./authController");
+const { decodeToken, checkIfEmailExists } = require("./authController");
 const { getAll } = require("./handleFactory");
 
 /**
@@ -22,13 +22,9 @@ exports.getAllCartProduct = getAll(CartModel);
 /**
  * Add product to cart
  */
-exports.addProductToCart = catchAsync(async (req, res) => {
+exports.addProductToCart = catchAsync(async (req, res, next) => {
   const { productId, color, size, quantity } = req.body;
-
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
-  let userId = decodedJwtToken.id;
+  let userId = req.user;
 
   const product = await Products.findById(productId);
   const cart = await CartModel.findOne({ userId });
@@ -97,14 +93,12 @@ exports.addProductToCart = catchAsync(async (req, res) => {
 /**
  * remove cart item
  */
-exports.removeItem = catchAsync(async (req, res) => {
+exports.removeItem = catchAsync(async (req, res, next) => {
   const productId = req.params.id;
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
+  let userId = req.user;
 
   let cart = await CartModel.findOne({
-    userId: decodedJwtToken.id,
+    userId,
   });
 
   if (!cart) {
@@ -136,13 +130,11 @@ exports.removeItem = catchAsync(async (req, res) => {
 /**
  * Get user cart
  */
-exports.getUserCart = catchAsync(async (req, res) => {
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
+exports.getUserCart = catchAsync(async (req, res, next) => {
+  let userId = req.user;
 
   let cart = await CartModel.findOne({
-    userId: decodedJwtToken.id,
+    userId,
   });
 
   if (!cart) {
@@ -158,15 +150,12 @@ exports.getUserCart = catchAsync(async (req, res) => {
 /**
  * increase product quantity by one
  */
-exports.increaseByOne = catchAsync(async (req, res) => {
+exports.increaseByOne = catchAsync(async (req, res, next) => {
   let { productId } = req.params;
-
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
+  let userId = req.user;
 
   let cart = await CartModel.findOne({
-    userId: decodedJwtToken.id,
+    userId
   });
 
   let productIndexInCart = cart.items.findIndex(
@@ -193,15 +182,12 @@ exports.increaseByOne = catchAsync(async (req, res) => {
 /**
  * decrease product quantity by one
  */
-exports.decreaseByOne = catchAsync(async (req, res) => {
+exports.decreaseByOne = catchAsync(async (req, res, next) => {
   let { productId } = req.params;
-
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
+  let userId = req.user;
 
   let cart = await CartModel.findOne({
-    userId: decodedJwtToken.id,
+    userId
   });
 
   let productIndexInCart = cart.items.findIndex(

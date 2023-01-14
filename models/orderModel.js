@@ -45,7 +45,18 @@ const orderSchema = new mongoose.Schema({
         type: String,
         default: 'Not Processed',
         enum: ['Not Processed', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
-    }
+    },
+    assignedTo: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Driver'
+    },
+    orderNote: String,
+    uniqueCode: {
+        type: String,
+        required: true
+    },
+    deliveredDate: Date,
+    deliveredTime: String
 }, {
     timestamps: true
 })

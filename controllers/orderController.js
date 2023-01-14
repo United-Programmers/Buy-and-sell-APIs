@@ -3,13 +3,14 @@ const OrderModel = require("../models/orderModel");
 const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
-const { decodeToken } = require("./authController");
+const crypto = require('crypto');
 
 /**
  * create new order
  */
-exports.createOrder = catchAsync(async (req, res) => {
+exports.createOrder = catchAsync(async (req, res, next) => {
   const { cartId } = req.body;
+  let userId = req.user;
 
   let cart = await CartModel.findById(cartId).populate({
     path: "items.product",
@@ -22,17 +23,12 @@ exports.createOrder = catchAsync(async (req, res) => {
     throw new AppError("No item in cart, add item to proceed", 400);
   }
 
-  // get user id
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
-  let userId = decodedJwtToken.id;
-
   let order = await new OrderModel({
     ...req.body,
     userId,
     products: cart.items,
     totalPrice: cart.totalPrice,
+    uniqueCode: 'BAS_' + crypto.randomBytes(10).toString("hex")
   }).save({ new: true });
 
   // clear user cart items
@@ -50,15 +46,9 @@ exports.createOrder = catchAsync(async (req, res) => {
 /**
  * get user orders
  */
-exports.getUserOrders = catchAsync(async (req, res) => {
+exports.getUserOrders = catchAsync(async (req, res, next) => {
   const { filter } = req.query;
-
-  // get user id
-  let decodedJwtToken = await decodeToken(
-    req.headers.authorization.split(" ")[1]
-  );
-  let userId = decodedJwtToken.id;
-
+  let userId = req.user._id;
   let orders;
 
   if (filter) {
@@ -81,7 +71,7 @@ exports.getUserOrders = catchAsync(async (req, res) => {
 /**
  * update order status
  */
-exports.updateOrderStatus = catchAsync(async (req, res) => {
+exports.updateOrderStatus = catchAsync(async (req, res, next) => {
   const { orderId, status } = req.body;
 
   let order = await OrderModel.findById(orderId);
@@ -98,3 +88,37 @@ exports.updateOrderStatus = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+/**
+ * assign order to driver
+ */
+
+exports.assignOrderToDriver = async (driverEmail, orderId) => {
+  let driver = await User.findOne({
+    email: driverEmail,
+  });
+  let order = await OrderModel.findById(orderId);
+
+  if (!driver) throw new AppError("no driver found with supplied email", 404);
+  if (!order) throw new AppError("no order found with supplied id", 404);
+
+  if(!driver.availability === "true"){
+    throw new AppError("driver not available to take orders", 403);
+  }
+
+  if(order.assignedTo){
+    throw new AppError("order already assigned to a driver", 403);
+  }
+
+  order.assignedTo = driver._id;
+  order.status = 'Processing'
+  driver.assignedOrders.push(order);
+
+  await order.save()
+  await driver.save()
+
+  return {
+    driver,
+    order,
+  };
+};
