@@ -40,6 +40,6 @@ router.post("/:id/approved", protect, ApprovedTutor);
 router.post("/:id/decline", protect, DeclineTutor);
 router.route("/").get(protect, getAllUsers);
 router.route("/user/:id").get(protect, getUser).delete(protect, deleteUser);
-router.post("/:id/update-address", updateAddressDetails);
+router.post("/:id/update-address",protect, updateAddressDetails);
 
 module.exports = router;

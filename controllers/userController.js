@@ -62,19 +62,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
  * update address details
  */
 exports.updateAddressDetails = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
+  const userId = req.user._id
 
-  // verify that it's user trying to update details
-  const token = req.headers.authorization.split(" ")[1];
-  const decodeToken = jwt.verify(token, process.env.JWT_SECRET);
-
-  if (id !== decodeToken.id) {
-    return next(
-      new AppError("You're not authorized to carry out this request", 401)
-    );
-  }
-
-  const user = await User.findById(id).populate("addressDetails");
+  const user = await User.findById(userId).populate("addressDetails");
 
   if (!user) {
     return next(new AppError("No user found with this id", 404));
