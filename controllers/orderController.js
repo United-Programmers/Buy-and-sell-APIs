@@ -109,6 +109,7 @@ exports.assignOrderToDriver = async (driverEmail, orderId) => {
   }
 
   order.assignedTo = driver._id;
+  order.status = 'Processing'
   driver.assignedOrders.push(order);
 
   await order.save()
