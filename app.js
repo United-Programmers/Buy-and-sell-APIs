@@ -27,6 +27,7 @@ const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 const { adminRoleGuard } = require("./middlewares/guards/adminRoleGuard");
 const { driverRoleGuard } = require("./middlewares/guards/driverRoleGuard");
+const { protect } = require("./controllers/authController");
 const app = express();
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -66,7 +67,7 @@ app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/admin", adminRoleGuard, adminRouter);
-app.use("/api/v1/driver", driverRoleGuard, driverRouter);
+app.use("/api/v1/driver", protect,driverRoleGuard, driverRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

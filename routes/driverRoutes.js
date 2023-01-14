@@ -3,7 +3,7 @@ const { getAllAssignedOrders, updateOrderStatus } = require('../controllers/driv
 
 const router = require('express').Router()
 
-router.get('/orders',protect, getAllAssignedOrders)
+router.get('/orders',getAllAssignedOrders)
 router.patch('/order/status', updateOrderStatus)
 
 module.exports = router;
