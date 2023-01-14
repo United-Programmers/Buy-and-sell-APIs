@@ -21,11 +21,11 @@ const signToken = (id, role) => {
 };
 
 /**
- * decode jwt token 
+ * decode jwt token
  */
 exports.decodeToken = async (token) => {
   return await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-}
+};
 
 const createSendToken = (data, statusCode, res) => {
   const token = signToken(data._id, data.role);
@@ -42,9 +42,7 @@ const createSendToken = (data, statusCode, res) => {
   res.status(statusCode).json({
     status: "success",
     token,
-    data: {
-      data,
-    },
+    data,
   });
 };
 
@@ -84,21 +82,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-//* SIGN UP
+/**
+ * user signup
+ */
 exports.userSignUp = catchAsync(async (req, res, next) => {
   let user = await User.findOne({ email: req.body.email });
   if (user)
     return next(new AppError("User with given email already exist!", 400));
 
-  const newUser = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    phoneNumber: req.body.phoneNumber,
-    agreed: req.body.agreed,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-  });
+  const newUser = await new User({ ...req.body }).save();
 
   let token = await Token.create({
     userId: newUser._id,
@@ -146,7 +138,9 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!email || !password) {
     return next(new AppError("Please provide email and password!", 400));
   }
-  const user = await User.findOne({ email }).select("+password");
+
+  const user = await User.findOne({ email: email }).select("+password");
+
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError("Incorrect email or password", 401));
   }
@@ -168,6 +162,9 @@ exports.logout = (req, res) => {
   res.status(200).json({ status: "success" });
 };
 
+/**
+ * forgot password function
+ */
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
@@ -215,6 +212,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+/**
+ * update password function
+ */
 exports.updatePassword = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
 
@@ -244,9 +244,12 @@ exports.restrictTo = (...roles) => {
  * Driver registration
  */
 exports.driverSignup = catchAsync(async (req, res, next) => {
-  let driverEmail = await User.findOne({ email: req.body.email });
-  if (driverEmail) {
-    return next(new AppError("Driver with given email already exist!", 400));
+  let emailExists = await User.findOne({
+    email: req.body.email,
+  });
+
+  if (emailExists) {
+    return next(new AppError("User with given email already exist!", 400));
   }
 
   const driver = await new User({ ...req.body, role: "driver" }).save();
@@ -272,15 +275,17 @@ exports.driverSignup = catchAsync(async (req, res, next) => {
  * Seller registration
  */
 exports.sellerSignup = catchAsync(async (req, res, next) => {
-  let sellerEmail = await User.findOne({ email: req.body.email });
-  if (sellerEmail) {
-    return next(new AppError("Seller with given email already exist!", 400));
+  let emailExists = await User.findOne({
+    email: req.body.email,
+  });
+  if (emailExists) {
+    return next(new AppError("User with given email already exist!", 400));
   }
 
-  const newSeller = await User.create({
+  const newSeller = await new User({
     ...req.body,
     role: "seller",
-  });
+  }).save();
 
   // add seller to sellers chat
   addUserToChat(CHAT_GROUP.ADMIN_TO_SELLERS, newSeller._id);
@@ -299,22 +304,18 @@ exports.sellerSignup = catchAsync(async (req, res, next) => {
   createSendToken(newSeller, 201, res);
 });
 
-//admin
+/**
+ * Admin registration
+ */
 exports.adminSignup = catchAsync(async (req, res, next) => {
-  let adminMail = await User.findOne({ email: req.body.email });
-  if (adminMail) {
+  let adminExist = await User.findOne({ email: req.body.email });
+  if (adminExist) {
     return next(new AppError("Admin with given email already exist!", 400));
   }
 
   const admin = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    phoneNumber: req.body.phoneNumber,
-    agreed: req.body.agreed,
-    email: req.body.email,
-    password: req.body.password,
-    role: req.body.roles,
-    passwordConfirm: req.body.passwordConfirm,
+    ...req.body,
+    role: "admin",
   });
 
   let token = await Token.create({
@@ -330,3 +331,4 @@ exports.adminSignup = catchAsync(async (req, res, next) => {
 
   createSendToken(admin, 201, res);
 });
+

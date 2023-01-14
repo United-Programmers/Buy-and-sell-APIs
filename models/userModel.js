@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "driver", "super-admin", "seller", "admin"],
+    enum: ["user", "super-admin", "admin", "driver", "seller"],
     default: "user",
     trim: true,
   },
@@ -60,30 +60,6 @@ const userSchema = new mongoose.Schema({
       message: "Passwords are not the same!",
     },
   },
-  //Drivers field
-  employmentHistory: {
-    type: String,
-  },
-  drivingRecord: {
-    type: String,
-  },
-  physicalAbilities: {
-    type: String,
-  },
-  availability: {
-    type: String,
-  },
-  //Sellers field
-  businessDescriptions: {
-    type: String,
-  },
-  shopName: {
-    type: String,
-    trim: true,
-    unique: true,
-    nullable: true,
-    default: null,
-  },
   paymentInfo: {
     type: String,
   },
@@ -104,6 +80,35 @@ const userSchema = new mongoose.Schema({
   addressDetails: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: "AddressDetails",
+  },
+  // driver fields
+  employmentHistory: {
+    type: String,
+  },
+  drivingRecord: {
+    type: String,
+  },
+  physicalAbilities: {
+    type: String,
+  },
+  availability: {
+    type: String,
+  },
+  assignedOrders: [
+    {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "Order",
+    },
+  ],
+  // seller fields
+  businessDescriptions: {
+    type: String,
+  },
+  shopName: {
+    type: String,
+    nullable: true,
+    unique: true,
+    default: null
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
