@@ -8,8 +8,6 @@ const catchAsync = require("../utils/catchAsync");
 exports.getAllAssignedOrders = catchAsync(async (req, res, next) => {
   let driverId = req.user._id;
 
-  console.log(driverId);
-
   let assignedOrders = await OrderModel.find({
     assignedTo: driverId,
   });
@@ -26,8 +24,6 @@ exports.getAllAssignedOrders = catchAsync(async (req, res, next) => {
 exports.updateOrderStatus = catchAsync(async (req, res) => {
   let { orderId, answer, reason, orderUniqueId } = req.body;
   let userId = req.user.id;
-
-  console.log(userId)
 
   let order = await OrderModel.findById(orderId);
   if (!order) {

@@ -3,6 +3,7 @@ const OrderModel = require("../models/orderModel");
 const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
+const crypto = require('crypto');
 
 /**
  * create new order
@@ -27,6 +28,7 @@ exports.createOrder = catchAsync(async (req, res, next) => {
     userId,
     products: cart.items,
     totalPrice: cart.totalPrice,
+    uniqueCode: 'BAS_' + crypto.randomBytes(10).toString("hex")
   }).save({ new: true });
 
   // clear user cart items

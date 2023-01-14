@@ -49,7 +49,14 @@ const orderSchema = new mongoose.Schema({
     assignedTo: {
         type: mongoose.Types.ObjectId,
         ref: 'Driver'
-    }
+    },
+    orderNote: String,
+    uniqueCode: {
+        type: String,
+        required: true
+    },
+    deliveredDate: Date,
+    deliveredTime: String
 }, {
     timestamps: true
 })
