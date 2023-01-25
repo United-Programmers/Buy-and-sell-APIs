@@ -4,7 +4,7 @@
     "description": "this is a security check in application",
     "main": "index.js",
     "engines": {
-        "node": "v16.16.0"
+        "node": "14.x"
     },
     "scripts": {
         "start": "node index.js",

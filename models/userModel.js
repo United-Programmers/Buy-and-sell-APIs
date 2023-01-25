@@ -63,6 +63,15 @@ const userSchema = new mongoose.Schema({
   paymentInfo: {
     type: String,
   },
+  website: {
+    type: String,
+  },
+  socialMedia: {
+    type: String,
+  },
+  vatRegistered: {
+    type: Boolean,
+  },
   verified: {
     type: Boolean,
     default: true,
